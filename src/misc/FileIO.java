@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 public class FileIO {
 	
 	private String filePath = new String("./Storage/");
-//	private File instructions = new File(filePath + "TestInstructions.txt");
+
 	
 	public String[] loadFile(String fileToLoad) {
 		BufferedReader br = null;

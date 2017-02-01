@@ -3,7 +3,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RAM {
-
 	
 	byte[] memory = new byte[10000];
 	private Map<String, MemoryBlock> memoryBlocks = new HashMap<String, MemoryBlock>();
