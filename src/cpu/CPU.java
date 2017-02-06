@@ -131,7 +131,7 @@ public class CPU {
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
 					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
 				// TODO Core Dump
-				coreDump(programName);
+				coreDump(programName, (memStart + memStoreIn), "LOAD");
 			}
 			int data = memory.getFromStack((memStart + memStoreIn));
 			registers.get("R" + destRegister).write(data);
@@ -149,7 +149,7 @@ public class CPU {
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
 					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
 				// TODO Core Dump
-				coreDump(programName);
+				coreDump(programName, (memStart + memStoreIn), "STORE");
 			}
 			memory.storeInStack((memStart + memStoreIn), valueToStore);
 			// System.out.println("VALUE STORED: " + valueToStore);
@@ -226,7 +226,7 @@ public class CPU {
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
 					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
 				// TODO Core Dump
-				coreDump(programName);
+				coreDump(programName, (memStart + memStoreIn), "CPRINT");
 			}
 			int toPrint = memory.getFromStack(memStart + memStoreIn);
 			System.out.println(toPrint);
@@ -253,12 +253,12 @@ public class CPU {
 		case 16: // Cread
 			char c = scanLee.next().charAt(0);
 			memStoreIn = memory.getFromMemory(instructionPointer);
-			System.out.println(programPCBs.get(programName) + " |STORE IN : " + (memStart + memStoreIn) + "| MEMADD: "
-					+ memStoreIn);
+//			System.out.println(programPCBs.get(programName) + " |STORE IN : " + (memStart + memStoreIn) + "| MEMADD: "
+//					+ memStoreIn);
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
 					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
 				// TODO Core Dump
-				coreDump(programName);
+				coreDump(programName, (memStart + memStoreIn), "CREAD");
 			}
 			memory.storeInStack((memStart + memStoreIn), c);
 			instructionPointer++;
@@ -283,10 +283,11 @@ public class CPU {
 		memory.storeInMemory(hexValue, startMem);
 	}
 
-	private void coreDump(String programName) {
-		System.err.println("FAIL");
+	private void coreDump(String programName, int memAccess, String command) {
+		System.err.println("You've crashed the system");
 
-		fileIO.appendToFile("You've broken the program, this is an uninformative core dump.",
+		fileIO.appendToFile("You've broken the program at pointer:" + instructionPointer + "\nYou were trying to access: "
+				+ memAccess + "\nYou were running the command: " + command,
 				programName + "DumpFile.DUMP");
 
 		System.exit(0);
