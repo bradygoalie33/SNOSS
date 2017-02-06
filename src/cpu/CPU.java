@@ -1,16 +1,22 @@
 package cpu;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import assembler.Assembler;
 import assembler.Assembly;
 import misc.FileIO;
 
 public class CPU {
 
+	private String filePath = new String("./Storage/");
 	private int lastUsedMemByte = 0;
 	private Scanner scanLee = new Scanner(System.in);
 	private Map<String, Register> registers = new HashMap<String, Register>();
@@ -23,7 +29,8 @@ public class CPU {
 
 	public static void main(String args[]) {
 		fileIO = new FileIO();
-//		Assembly assembly = new Assembly();
+		//Assembler assembler = new Assembler();
+		//fileIO.loadFile(fileToLoad)
 //		assembly.translateProgram();
 
 
@@ -42,8 +49,14 @@ public class CPU {
 	}
 	
 	private void loadProgramIntoMemory(String programName) {
-		programName = programName.replace(".txt", "");
+		//programName = programName.replace(".txt", "");
 		String[] fileToLoad = fileIO.loadFile(programName + ".sno");
+		try {
+			byte[] temp = Files.readAllBytes(Paths.get(programName + "sno"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		String instructionSet = fileToLoad[0];
 		String testString = "";
 		ArrayList<Object> test = new ArrayList<>();
@@ -313,22 +326,35 @@ public class CPU {
 				System.out.println("0");
 				break;
 			case "exec":				
-				Assembly assembly = new Assembly();
-				assembly.translateProgram(firstLine[1]);
-
+				//Assembly assembly = new Assembly();
+				//assembly.translateProgram(firstLine[1]);
+				Assembler assembler = new Assembler();
+				Path path = Paths.get(filePath + firstLine[1]);
+				try {
+					assembler.processFile(path.toFile());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				cpu.loadProgramIntoMemory(firstLine[1]);
 				break;
 			case "exec_i":
 				execI = true;
 				
-				assembly = new Assembly();
-				assembly.translateProgram(firstLine[1]);
-
+//				assembly = new Assembly();
+//				assembly.translateProgram(firstLine[1]);
+				Assembler assembler2 = new Assembler();
+				Path path2 = Paths.get(filePath + firstLine[1]);
+				try {
+					assembler2.processFile(path2.toFile());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				cpu.loadProgramIntoMemory(firstLine[1]);
 				execI = false;
 				break;
 			case "kill":
-//				System.out.println("kill");
 				unloadProgram(firstLine[1]);
 				break;
 			case "exit":
