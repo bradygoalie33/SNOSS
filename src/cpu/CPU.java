@@ -29,10 +29,9 @@ public class CPU {
 
 	public static void main(String args[]) {
 		fileIO = new FileIO();
-		//Assembler assembler = new Assembler();
-		//fileIO.loadFile(fileToLoad)
-//		assembly.translateProgram();
-
+		// Assembler assembler = new Assembler();
+		// fileIO.loadFile(fileToLoad)
+		// assembly.translateProgram();
 
 		cpu = new CPU();
 		cpu.initRegisters();
@@ -42,70 +41,78 @@ public class CPU {
 
 		// cpu.testRegisters();
 		// cpu.testRAM();
-//		cpu.loadProgramIntoMemory("TEST");
+		// cpu.loadProgramIntoMemory("TEST");
 
 		cpu.runConsole();
 
 	}
-	
+
 	private void loadProgramIntoMemory(String programName) {
-		//programName = programName.replace(".txt", "");
-		String[] fileToLoad = fileIO.loadFile(programName + ".sno");
+		programName = programName.replace(".txt", "");
+		// String[] fileToLoad = fileIO.loadFile(programName + ".sno");
+		int startMem = lastUsedMemByte;
 		try {
-			byte[] temp = Files.readAllBytes(Paths.get(programName + "sno"));
+			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
+
+			for (int i = lastUsedMemByte; i < temp.length; i++) {
+//				System.out.println(temp[i]);
+				memory.storeInMemory(lastUsedMemByte, temp[i]);
+				lastUsedMemByte++;
+			}
+
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String instructionSet = fileToLoad[0];
-		String testString = "";
-		ArrayList<Object> test = new ArrayList<>();
+		// String instructionSet = ""/*fileToLoad[0]*/;
+		// String testString = "";
+		// ArrayList<Object> test = new ArrayList<>();
 
-		for (int i = 0; i < instructionSet.length(); i++) {
-			testString += instructionSet.charAt(i);
-			if (i + 2 > instructionSet.length() - 1) {
-				break;
-			} else if (instructionSet.charAt(i + 2) == 'x' || instructionSet.charAt(i + 2) == 'X') {
-				test.add(testString);
-				testString = "";
-				
-			}
-		}
-		testString += instructionSet.charAt(instructionSet.length() - 1);
-		test.add(testString);
-		
-		int startMem = lastUsedMemByte;
-		int hexTracker = lastUsedMemByte;
-		for (Object s : test) {
-			memory.storeInMemory(hexTracker, getValueFromHex(s.toString()));
-			hexTracker++;
-		}
-		allocatePCB(hexTracker, programName, startMem);
+		// for (int i = 0; i < instructionSet.length(); i++) {
+		// testString += instructionSet.charAt(i);
+		// if (i + 2 > instructionSet.length() - 1) {
+		// break;
+		// } else if (instructionSet.charAt(i + 2) == 'x' ||
+		// instructionSet.charAt(i + 2) == 'X') {
+		// test.add(testString);
+		// testString = "";
+		//
+		// }
+		// }
+		// testString += instructionSet.charAt(instructionSet.length() - 1);
+		// test.add(testString);
+
+		// int startMem = lastUsedMemByte;
+		// int hexTracker = lastUsedMemByte;
+		// for (Object s : test) {
+		// memory.storeInMemory(hexTracker, getValueFromHex(s.toString()));
+		// hexTracker++;
+		// }
+		allocatePCB(lastUsedMemByte, programName, startMem);
 		runProgram(programName);
 	}
-	
+
 	private void unloadProgram(String programName) {
-		
+
 		int pcbStart = programPCBs.get(programName);
 		int programstart = memory.getFromMemory(pcbStart);
-		
-		for(int i = programstart; i< pcbStart; i++) {
+
+		for (int i = programstart; i < pcbStart; i++) {
 			memory.storeInMemory(i, 0);
 		}
-		
+
 	}
 
 	private void runProgram(String programName) {
 		instructionPointer = memory.getFromMemory(programPCBs.get(programName));
-
 		while (instructionPointer < (programPCBs.get(programName))) {
 			int commandType = memory.getFromMemory(instructionPointer);
-			if(execI) {
+//			System.out.println("COMMAND: " + commandType);
+			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
 				System.out.println(" PROCESS: " + 1);
 			}
+
 			instructionPointer++;
-			
 			grabFullCommand(commandType, programName);
 		}
 
@@ -113,35 +120,42 @@ public class CPU {
 
 	private void grabFullCommand(int commandType, String programName) {
 		int memStart = programPCBs.get(programName) + 10;
+//		System.out.println("INSTRUCTIONS: " + instructionPointer + " COMMAND: " + commandType);
 		switch (commandType) {
-		case 1: //Load
+		case 1: // Load
 			int destRegister = memory.getFromMemory(instructionPointer) + 1;
+//			System.out.println("DESTREG: " + destRegister);
 			instructionPointer++;
 			int memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer++;
-			if((memStart + memStoreIn) < programPCBs.get(programName) || (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
-				//TODO Core Dump
+			if ((memStart + memStoreIn) < programPCBs.get(programName)
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+				// TODO Core Dump
 				coreDump(programName);
 			}
 			int data = memory.getFromStack((memStart + memStoreIn));
 			registers.get("R" + destRegister).write(data);
 			break;
-		case 2: //Store
+		case 2: // Store
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer++;
+			memStoreIn += memory.getFromMemory(instructionPointer);
+			instructionPointer++;
 			int register = memory.getFromMemory(instructionPointer) + 1;
+//			System.out.println("REG: " + register);
 			instructionPointer++;
 			int valueToStore = binaryToInt(registers.get("R" + register).read());
-			System.out.println("STORING IN: " + (memStoreIn + memStart));
-			if((memStart + memStoreIn) < programPCBs.get(programName) || (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
-				//TODO Core Dump
+//			System.out.println("STORING IN: " + (memStoreIn + memStart) + " || VALUE: " + valueToStore);
+			if ((memStart + memStoreIn) < programPCBs.get(programName)
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+				// TODO Core Dump
 				coreDump(programName);
 			}
 			memory.storeInStack((memStart + memStoreIn), valueToStore);
 			// System.out.println("VALUE STORED: " + valueToStore);
-			
+
 			break;
-		case 3: //Add
+		case 3: // Add
 			int register1 = memory.getFromMemory(instructionPointer) + 1;
 			instructionPointer++;
 			int register2 = memory.getFromMemory(instructionPointer) + 1;
@@ -152,7 +166,7 @@ public class CPU {
 			instructionPointer++;
 			registers.get("R" + register1).write(registerValue2 + registerValue3);
 			break;
-		case 4: //Sub
+		case 4: // Sub
 			register1 = memory.getFromMemory(instructionPointer) + 1;
 			instructionPointer++;
 			register2 = memory.getFromMemory(instructionPointer) + 1;
@@ -161,11 +175,11 @@ public class CPU {
 			register3 = memory.getFromMemory(instructionPointer) + 1;
 			registerValue3 = binaryToInt(registers.get("R" + register3).read());
 			instructionPointer++;
-			
+
 			int subtractedValue = registerValue2 - registerValue3;
 			registers.get("R" + register1).write(subtractedValue);
 			break;
-		case 5: //Mul
+		case 5: // Mul
 			register1 = memory.getFromMemory(instructionPointer) + 1;
 			instructionPointer++;
 			register2 = memory.getFromMemory(instructionPointer) + 1;
@@ -176,7 +190,7 @@ public class CPU {
 			registerValue3 = binaryToInt(registers.get("R" + register3).read());
 			registers.get("R" + register1).write(registerValue2 * registerValue3);
 			break;
-		case 6: //Div
+		case 6: // Div
 			register1 = memory.getFromMemory(instructionPointer) + 1;
 			instructionPointer++;
 			register2 = memory.getFromMemory(instructionPointer) + 1;
@@ -187,7 +201,7 @@ public class CPU {
 			registerValue3 = binaryToInt(registers.get("R" + register3).read());
 			registers.get("R" + register1).write(registerValue2 / registerValue3);
 			break;
-		case 7: //Eq
+		case 7: // Eq
 			register1 = memory.getFromMemory(instructionPointer) + 1;
 			instructionPointer++;
 			register2 = memory.getFromMemory(instructionPointer) + 1;
@@ -196,64 +210,66 @@ public class CPU {
 			register3 = memory.getFromMemory(instructionPointer) + 1;
 			instructionPointer++;
 			registerValue3 = binaryToInt(registers.get("R" + register3).read());
-			if(registerValue2 == registerValue3) {
+			if (registerValue2 == registerValue3) {
 				registers.get("R" + register1).write(1);
-			}
-			else {
+			} else {
 				registers.get("R" + register1).write(0);
 			}
 			break;
-		case 8: //Goto
+		case 8: // Goto
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer = (memStart + memStoreIn);
 			break;
-		case 9: //Cprint
+		case 9: // Cprint
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer++;
-			if((memStart + memStoreIn) < programPCBs.get(programName) || (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
-				//TODO Core Dump
+			if ((memStart + memStoreIn) < programPCBs.get(programName)
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+				// TODO Core Dump
 				coreDump(programName);
 			}
 			int toPrint = memory.getFromStack(memStart + memStoreIn);
 			System.out.println(toPrint);
 			break;
-		case 10: //Loadc
+		case 10: // Loadc
 			int registerValue = memory.getFromMemory(instructionPointer) + 1;
 			Register r = registers.get("R" + registerValue);
 			instructionPointer++;
-			
+			r.write(memory.getFromMemory(instructionPointer));
+			instructionPointer++;
 			r.write(memory.getFromMemory(instructionPointer));
 			instructionPointer++;
 			break;
-		case 11: //Goto If
+		case 11: // Goto If
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer++;
 			registerValue = memory.getFromMemory(instructionPointer) + 1;
 			instructionPointer++;
-			if(binaryToInt(registers.get("R" + registerValue).read()) == 0){
+			if (binaryToInt(registers.get("R" + registerValue).read()) == 0) {
 				instructionPointer = (memStart + memStoreIn);
-			}			
-			
+			}
+
 			break;
-		case 16: //Cread
+		case 16: // Cread
 			char c = scanLee.next().charAt(0);
 			memStoreIn = memory.getFromMemory(instructionPointer);
-			System.out.println(programPCBs.get(programName) + " |STORE IN : " + (memStart + memStoreIn) + "| MEMADD: " + memStoreIn);
-			if((memStart + memStoreIn) < programPCBs.get(programName) || (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
-				//TODO Core Dump
+			System.out.println(programPCBs.get(programName) + " |STORE IN : " + (memStart + memStoreIn) + "| MEMADD: "
+					+ memStoreIn);
+			if ((memStart + memStoreIn) < programPCBs.get(programName)
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+				// TODO Core Dump
 				coreDump(programName);
 			}
 			memory.storeInStack((memStart + memStoreIn), c);
 			instructionPointer++;
 			break;
-		case 17: //Exit
+		case 17: // Exit
 			unloadProgram(programName);
-//			System.exit(0); 
 			break;
 		}
-		
+
 	}
-	
+
 	private int binaryToInt(int binary) {
 		int binaryVal = Integer.parseInt("" + binary);
 		return binaryVal;
@@ -267,16 +283,12 @@ public class CPU {
 		memory.storeInMemory(hexValue, startMem);
 	}
 
-	private int getValueFromHex(String hexCode) {
-		String format = hexCode.replace("0x", "");
-		int hex = (Integer.parseInt(format, 16));
-		return hex;
-	}
 	private void coreDump(String programName) {
 		System.err.println("FAIL");
-		
-		fileIO.appendToFile("You've broken the program, this is an uninformative core dump.", programName + "DumpFile.DUMP");
-		
+
+		fileIO.appendToFile("You've broken the program, this is an uninformative core dump.",
+				programName + "DumpFile.DUMP");
+
 		System.exit(0);
 	}
 
@@ -305,7 +317,6 @@ public class CPU {
 		registers.put("R5", new Register());
 		registers.put("R6", new Register());
 	}
-	
 
 	private void initRAM() {
 		memory = new RAM();
@@ -325,30 +336,28 @@ public class CPU {
 			case "ps":
 				System.out.println("0");
 				break;
-			case "exec":				
-				//Assembly assembly = new Assembly();
-				//assembly.translateProgram(firstLine[1]);
+			case "exec":
+				// Assembly assembly = new Assembly();
+				// assembly.translateProgram(firstLine[1]);
 				Assembler assembler = new Assembler();
 				Path path = Paths.get(filePath + firstLine[1]);
 				try {
 					assembler.processFile(path.toFile());
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				cpu.loadProgramIntoMemory(firstLine[1]);
 				break;
 			case "exec_i":
 				execI = true;
-				
-//				assembly = new Assembly();
-//				assembly.translateProgram(firstLine[1]);
+
+				// assembly = new Assembly();
+				// assembly.translateProgram(firstLine[1]);
 				Assembler assembler2 = new Assembler();
 				Path path2 = Paths.get(filePath + firstLine[1]);
 				try {
 					assembler2.processFile(path2.toFile());
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				cpu.loadProgramIntoMemory(firstLine[1]);

@@ -246,7 +246,6 @@ public class Assembler{
 				inc++;
 			}
 		}
-		//File snoFile = new File("/Users/sn255043/Documents/snossMem/" + concatFileType(filename) + ".sno");
 		File snoFile = new File(filePath + concatFileType(filename) + ".sno");
 
 		try {
@@ -254,18 +253,16 @@ public class Assembler{
 			fos.write(bytes);
 			fos.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
 
 	private String concatFileType(String name){
-		int length = name.length();
-		return name.substring(0, length - 4);
+		name = name.replace(".txt", "");
+		return name;
 	}
 
 }
