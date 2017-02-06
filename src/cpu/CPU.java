@@ -26,6 +26,8 @@ public class CPU {
 	private Map<String, Integer> programPCBs = new HashMap<String, Integer>();
 	private boolean execI = false;
 	int instructionPointer = 0;
+	private final int PCBSize = 64;
+	
 
 	public static void main(String args[]) {
 		fileIO = new FileIO();
@@ -55,7 +57,7 @@ public class CPU {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
 
 			for (int i = lastUsedMemByte; i < temp.length; i++) {
-//				System.out.println(temp[i]);
+				System.out.println(temp[i]);
 				memory.storeInMemory(lastUsedMemByte, temp[i]);
 				lastUsedMemByte++;
 			}
@@ -106,7 +108,6 @@ public class CPU {
 		instructionPointer = memory.getFromMemory(programPCBs.get(programName));
 		while (instructionPointer < (programPCBs.get(programName))) {
 			int commandType = memory.getFromMemory(instructionPointer);
-//			System.out.println("COMMAND: " + commandType);
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
 				System.out.println(" PROCESS: " + 1);
@@ -129,7 +130,7 @@ public class CPU {
 			int memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer++;
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
-					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + PCBSize)) {
 				// TODO Core Dump
 				coreDump(programName, (memStart + memStoreIn), "LOAD");
 			}
@@ -147,7 +148,7 @@ public class CPU {
 			int valueToStore = binaryToInt(registers.get("R" + register).read());
 //			System.out.println("STORING IN: " + (memStoreIn + memStart) + " || VALUE: " + valueToStore);
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
-					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + PCBSize)) {
 				// TODO Core Dump
 				coreDump(programName, (memStart + memStoreIn), "STORE");
 			}
@@ -181,8 +182,10 @@ public class CPU {
 			break;
 		case 5: // Mul
 			register1 = memory.getFromMemory(instructionPointer) + 1;
+			System.out.println("REG: " + register1);
 			instructionPointer++;
 			register2 = memory.getFromMemory(instructionPointer) + 1;
+			System.out.println("REG: " + register2);
 			registerValue2 = binaryToInt(registers.get("R" + register2).read());
 			instructionPointer++;
 			register3 = memory.getFromMemory(instructionPointer) + 1;
@@ -224,7 +227,7 @@ public class CPU {
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer++;
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
-					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + PCBSize)) {
 				// TODO Core Dump
 				coreDump(programName, (memStart + memStoreIn), "CPRINT");
 			}
@@ -252,11 +255,10 @@ public class CPU {
 			break;
 		case 16: // Cread
 			char c = scanLee.next().charAt(0);
-			memStoreIn = memory.getFromMemory(instructionPointer);
-//			System.out.println(programPCBs.get(programName) + " |STORE IN : " + (memStart + memStoreIn) + "| MEMADD: "
-//					+ memStoreIn);
+			memStoreIn = memory.getFromMemory(instructionPointer++) + memory.getFromMemory(instructionPointer++);
+			
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
-					|| (memStart + memStoreIn) > (programPCBs.get(programName) + 64)) {
+					|| (memStart + memStoreIn) > (programPCBs.get(programName) + PCBSize)) {
 				// TODO Core Dump
 				coreDump(programName, (memStart + memStoreIn), "CREAD");
 			}
@@ -276,8 +278,7 @@ public class CPU {
 	}
 
 	private void allocatePCB(int hexValue, String programName, int startMem) {
-		int bytesPerSection = 64;
-		int allocated = hexValue + bytesPerSection;
+		int allocated = hexValue + PCBSize;
 		lastUsedMemByte = allocated;
 		programPCBs.put(programName, hexValue);
 		memory.storeInMemory(hexValue, startMem);
