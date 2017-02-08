@@ -22,9 +22,9 @@ public class RAM {
 		int index = getValueFromHex(hexCode);
 		return (memory[index]);
 	}
-	public int getFromMemory(int hexValue) {
+	public byte getFromMemory(int hexValue) {
 //		int index = getValueFromHex(hexCode);
-		int toReturn = (memory[hexValue]);
+		byte toReturn = (memory[hexValue]);
 		return toReturn;
 	}
 	
