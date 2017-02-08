@@ -122,7 +122,6 @@ public class CPU {
 			int register = memory.getInstructionFromMemory(instructionPointer) + 1;
 			instructionPointer++;
 			int valueToStore = binaryToInt(registers.get("R" + register).read());
-			System.out.println("STORING IN: " + (memStoreIn + memStart) + " || VALUE: " + programPCBs.get(programName));
 			if ((memStart + memStoreIn) < programPCBs.get(programName)
 					|| (memStart + memStoreIn) > ((programPCBs.get(programName) + PCB_SIZE + STACK_SIZE))) {
 				coreDump(programName, (memStart + memStoreIn), "STORE");
