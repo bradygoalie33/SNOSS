@@ -35,7 +35,7 @@ public class CPU {
 		// Assembler assembler = new Assembler();
 		// fileIO.loadFile(fileToLoad)
 		// assembly.translateProgram();
-
+		
 		cpu = new CPU();
 		cpu.initRegisters();
 		cpu.initRAM();
@@ -192,7 +192,8 @@ public class CPU {
 			break;
 		case 8: // Goto
 			memStoreIn = memory.getFromMemory(instructionPointer);
-			instructionPointer = (memStart + memStoreIn);
+//			System.out.println("GOTO: " + (memStart + memStoreIn) + "|| INSTRUCTION POINTER: " + instructionPointer);
+			instructionPointer = (memStoreIn);
 			break;
 		case 9: // Cprint
 			memStoreIn = memory.getFromMemory(instructionPointer);
@@ -272,7 +273,6 @@ public class CPU {
 		r2.write(255);
 
 		String testHex = "0x0000000f";
-
 	}
 
 	@SuppressWarnings("unused")
