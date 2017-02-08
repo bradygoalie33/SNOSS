@@ -11,10 +11,6 @@ public class RAM {
 	
 	public RAM() {
 		for(int i = 0; i < memory.length; i++) {
-//			int currentBlock = i * 32;
-//			int nextBlock = ((i + 1) * 32) - 1;
-//			String key = Integer.toHexString(i);
-//			memoryBlocks.put(key, new MemoryBlock(currentBlock, nextBlock));
 			memory[i] = 0;
 		}		
 	}
@@ -24,7 +20,6 @@ public class RAM {
 //		return (memory[index]);
 //	}
 	public byte getInstructionFromMemory(int hexValue) {
-//		int index = getValueFromHex(hexCode);
 		byte toReturn = (memory[hexValue]);
 		return toReturn;
 	}
@@ -50,10 +45,6 @@ public class RAM {
 	}
 	
 	public void storeInMemory(int hexValue, int toStore) {
-//		ByteBuffer bb = ByteBuffer.allocate(7);
-//		bb.putInt(toStore);
-//		BigInteger bigInt = BigInteger.valueOf(toStore);     
-//		byte[] storeInt = bigInt.toByteArray();;
 		String binaryStore = formatAsBinary(Integer.toBinaryString(toStore));
 		String splitBinary1 = binaryStore.substring(0, 8);
 		String splitBinary2 = binaryStore.substring(8, 16);
@@ -67,7 +58,6 @@ public class RAM {
 	}
 	
 	public int getFromMemory(int hexValue) {
-//		int index = getValueFromHex(hexCode);
 		int leadingInt = memory[hexValue] & 0xff;
 		int trailingInt = memory[hexValue + 1] & 0xff;
 
@@ -75,7 +65,6 @@ public class RAM {
 		String binaryStore2 = formatAsBinaryByte(Integer.toBinaryString(trailingInt));
 		String binaryStore = binaryStore1 + binaryStore2;
 		int returnInt = Integer.parseInt(binaryStore, 2);
-//		System.out.println("RETURNING: " + returnInt);
 		return returnInt;
 	}
 	

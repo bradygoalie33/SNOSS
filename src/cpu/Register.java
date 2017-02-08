@@ -15,7 +15,6 @@ public class Register {
 		for(byte b : reg) {
 			toReturn += b;
 		}
-//		System.out.println("READ: " + toReturn);
 		return Integer.valueOf(toReturn, 2);
 	}
 	
@@ -29,7 +28,6 @@ public class Register {
 			incrementer++;
 		}
 		
-//		System.out.println(printRegister());
 		
 	}
 	
@@ -48,10 +46,6 @@ public class Register {
 		for(int i = 0; i < reg.length; i++) {
 			reg[i] = 0;
 		}
-//		for(byte b : reg) {
-//			b = 0;
-//		}
-//		System.out.println("CLEARED: " + printRegister());
 	}
 	
 	public String printRegister() {
