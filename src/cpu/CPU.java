@@ -27,8 +27,8 @@ public class CPU {
 	private Map<String, Integer> programPCBs = new HashMap<String, Integer>();
 	private boolean execI = false;
 	int instructionPointer = 0;
-	private final int PCB_SIZE = 10;
-	private final int STACK_SIZE = 54;
+	private final int PCB_SIZE = 20;
+	private final int STACK_SIZE = 44;
 	
 
 	public static void main(String args[]) {
