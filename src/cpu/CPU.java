@@ -47,7 +47,9 @@ public class CPU {
 		int startMem = lastUsedMemByte;
 		try {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
-			for (int i = lastUsedMemByte; i < temp.length - 4; i++) {
+
+//			System.out.println("LENGTH: " + temp.length);
+			for (int i = lastUsedMemByte; i < temp.length; i++) {
 				memory.storeInstructionInMemory(lastUsedMemByte, temp[i]);
 				lastUsedMemByte++;
 			}
@@ -63,7 +65,7 @@ public class CPU {
 	private void runProgram(Integer pId) {
 		instructionPointer = memory.getInstructionFromMemory(programPCBs.get(pId) + 1);
 		while (instructionPointer < (programPCBs.get(pId))) {
-			System.out.println("WHILE: " + (instructionPointer < programPCBs.get(pId)));
+//			System.out.println("WHILE: " + (instructionPointer < programPCBs.get(pId)) + "|| INSTRUCTION: " + instructionPointer + "|| PCB: " + programPCBs.get(pId));
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
@@ -74,13 +76,20 @@ public class CPU {
 			}
 
 			instructionPointer++;
-			grabFullCommand(commandType, pId);		
+			boolean returnedBool = grabFullCommand(commandType, pId);
+			if(returnedBool) {
+				break;
+			}
+			else {
+				
+			}
 		}
 
 	}
 
 	
-	private void grabFullCommand(int command, Integer pId) {
+	private boolean grabFullCommand(int command, Integer pId) {
+		boolean returnBool = false;
 		int memStart = programPCBs.get(pId) + PCB_SIZE;
 		switch (command) {
 		case 1: // Load
@@ -215,10 +224,12 @@ public class CPU {
 			instructionPointer++;
 			break;
 		case 17: // Exit
+			System.out.println("EXIT");
 			unloadProgram(pId);
+			returnBool = true;
 			break;
 		}
-
+		return returnBool;
 	}
 
 	private int binaryToInt(int binary) {
@@ -250,9 +261,9 @@ public class CPU {
 		for (int i = programstart; i < pcbStart + 19; i++) {
 			memory.storeInstructionInMemory(i, (byte)0);
 		}
+		System.out.println("PROGRAM START: " + programstart);
 		lastUsedMemByte = programstart;
-
-	}
+	}	
 
 	private void coreDump(Integer pId, int memAccess, String command) {
 		System.err.println("You've crashed the system");

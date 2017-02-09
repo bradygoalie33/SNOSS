@@ -27,7 +27,7 @@ public class Shell {
 			String input = scanLee.nextLine();
 			String[] firstLine = input.split(" ");
 			if(firstLine.length > 2){
-				if(firstLine[2] == "&"){
+				if(firstLine[2].equals("&")){
 					ampersand = true;
 				}
 			}
@@ -55,6 +55,7 @@ public class Shell {
 							cpu.loadProgramIntoMemory(threadString);
 						}
 					});
+					t.start();
 				}
 				else{
 					Path path = Paths.get(filePath + firstLine[1]);
@@ -83,6 +84,7 @@ public class Shell {
 							cpu.execI = false;
 						}
 					});
+					t2.start();
 				}
 				else{
 					Path path2 = Paths.get(filePath + firstLine[1]);
