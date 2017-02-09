@@ -98,7 +98,7 @@ public class Shell {
 				}
 				break;
 			case "kill":
-				cpu.unloadProgram(firstLine[1]);
+				cpu.unloadProgram(Integer.parseInt(firstLine[1]));
 				break;
 			case "exit":
 				System.exit(0);
