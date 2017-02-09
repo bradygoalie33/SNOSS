@@ -29,6 +29,7 @@ public class CPU {
 	int instructionPointer = 0;
 	private final int PCB_SIZE = 20;
 	private final int STACK_SIZE = 44;
+	private static int pId = 1;
 	
 
 	public static void main(String args[]) {
@@ -74,19 +75,9 @@ public class CPU {
 			e.printStackTrace();
 		}
 		
-		allocatePCB(lastUsedMemByte, programName, startMem);
+		allocatePCB(lastUsedMemByte, programName, startMem, pId);
+		pId++;
 		runProgram(programName);
-	}
-	
-	public void unloadProgram(String programName) {
-
-		int pcbStart = programPCBs.get(programName);
-		int programstart = memory.getFromMemory(pcbStart);
-		programPCBs.remove(programName);
-		for (int i = programstart; i < pcbStart; i++) {
-			memory.storeInstructionInMemory(i, (byte)0);
-		}
-
 	}
 
 	private void runProgram(String programName) {
@@ -252,11 +243,29 @@ public class CPU {
 		return binaryVal;
 	}
 
-	private void allocatePCB(int hexValue, String programName, int startMem) {
-		int allocated = hexValue + PCB_SIZE;
-		lastUsedMemByte = allocated;
-		programPCBs.put(programName, hexValue);
-		memory.storeInMemory(hexValue, startMem);
+	private void allocatePCB(int firstOpenByte, String programName, int startMem, int pId) {
+		lastUsedMemByte = firstOpenByte + PCB_SIZE + STACK_SIZE;
+		programPCBs.put(programName, firstOpenByte);
+		int pcbIncrementer = firstOpenByte;
+		memory.storeInstructionInMemory(pcbIncrementer, (byte)pId);
+		memory.storeInMemory(pcbIncrementer+=1, startMem);
+		memory.storeInMemory(pcbIncrementer+=2, firstOpenByte - 1);
+		memory.storeInstructionInMemory(pcbIncrementer+=1, (byte)0);
+		memory.storeInMemory(pcbIncrementer+=2, registers.get("R1").read());
+		memory.storeInMemory(pcbIncrementer+=2, registers.get("R2").read());
+		memory.storeInMemory(pcbIncrementer+=2, registers.get("R3").read());
+		memory.storeInMemory(pcbIncrementer+=2, registers.get("R4").read());
+		memory.storeInMemory(pcbIncrementer+=2, registers.get("R5").read());
+		memory.storeInMemory(pcbIncrementer+=2, registers.get("R6").read());		
+	}
+	
+	public void unloadProgram(String programName) {
+		int pcbStart = programPCBs.get(programName);
+		int programstart = memory.getFromMemory(pcbStart + 1);
+		programPCBs.remove(programName);
+		for (int i = programstart; i < pcbStart + 19; i++) {
+			memory.storeInstructionInMemory(i, (byte)0);
+		}
 	}
 
 	private void coreDump(String programName, int memAccess, String command) {
@@ -298,54 +307,5 @@ public class CPU {
 		memory = new RAM();
 
 	}
-
-//	private void runConsole() {
-//		while (true) {
-//			String input = scanLee.nextLine();
-//			String[] firstLine = input.split(" ");
-//
-//			switch (firstLine[0]) {
-//
-//			case "ls":
-//				filesInDirectory();
-//				break;
-//			case "ps":
-//				System.out.println("0");
-//				break;
-//			case "exec":
-//				Assembler assembler = new Assembler();
-//				Path path = Paths.get(filePath + firstLine[1]);
-//				try {
-//					assembler.processFile(path.toFile());
-//				} catch (IOException e1) {
-//					e1.printStackTrace();
-//				}
-//				cpu.loadProgramIntoMemory(firstLine[1]);
-//				break;
-//			case "exec_i":
-//				execI = true;
-//
-//				Assembler assembler2 = new Assembler();
-//				Path path2 = Paths.get(filePath + firstLine[1]);
-//				try {
-//					assembler2.processFile(path2.toFile());
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//				cpu.loadProgramIntoMemory(firstLine[1]);
-//				execI = false;
-//				break;
-//			case "kill":
-//				unloadProgram(firstLine[1]);
-//				break;
-//			case "exit":
-//				System.exit(0);
-//				break;
-//			}
-//
-//		}
-//	}
-
-	
 
 }
