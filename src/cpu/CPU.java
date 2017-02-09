@@ -25,7 +25,7 @@ public class CPU {
 	private static CPU cpu;
 	private static FileIO fileIO;
 	private Map<String, Integer> programPCBs = new HashMap<String, Integer>();
-	private boolean execI = false;
+	public boolean execI = false;
 	int instructionPointer = 0;
 	private final int PCB_SIZE = 20;
 	private final int STACK_SIZE = 44;
@@ -65,8 +65,8 @@ public class CPU {
 		int startMem = lastUsedMemByte;
 		try {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
-			
-			for (int i = lastUsedMemByte; i < temp.length; i++) {
+//			System.out.println("LENGTH: " + temp.length);
+			for (int i = lastUsedMemByte; i < temp.length - 4; i++) {
 				memory.storeInstructionInMemory(lastUsedMemByte, temp[i]);
 				lastUsedMemByte++;
 			}
@@ -74,20 +74,25 @@ public class CPU {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		//This decrement is to fix the extra increment I have going at the end of the loop
+//		lastUsedMemByte--;
 		allocatePCB(lastUsedMemByte, programName, startMem, pId);
 		pId++;
+
 		runProgram(programName);
 	}
 
 	private void runProgram(String programName) {
-		instructionPointer = memory.getInstructionFromMemory(programPCBs.get(programName));
+		instructionPointer = memory.getInstructionFromMemory(programPCBs.get(programName) + 1);
 		while (instructionPointer < (programPCBs.get(programName))) {
-			System.out.println("WHILE: " + (instructionPointer < programPCBs.get(programName)));
+//			System.out.println("WHILE: " + (instructionPointer < programPCBs.get(programName)) + "|| INST: " + instructionPointer + "|| PCBSTART: " + programPCBs.get(programName));
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
 				System.out.println(" PROCESS: " + 1);
+				for(int i = 1; i < registers.size() + 1; i++) {
+					System.out.println(registers.get("R" + i).printRegister());
+				}
 			}
 
 			instructionPointer++;
@@ -245,6 +250,7 @@ public class CPU {
 
 	private void allocatePCB(int firstOpenByte, String programName, int startMem, int pId) {
 		lastUsedMemByte = firstOpenByte + PCB_SIZE + STACK_SIZE;
+		System.out.println("FIRST: " + startMem);
 		programPCBs.put(programName, firstOpenByte);
 		int pcbIncrementer = firstOpenByte;
 		memory.storeInstructionInMemory(pcbIncrementer, (byte)pId);
@@ -263,9 +269,11 @@ public class CPU {
 		int pcbStart = programPCBs.get(programName);
 		int programstart = memory.getFromMemory(pcbStart + 1);
 		programPCBs.remove(programName);
-		for (int i = programstart; i < pcbStart + 19; i++) {
+		for (int i = programstart; i < pcbStart + (PCB_SIZE - 1); i++) {
 			memory.storeInstructionInMemory(i, (byte)0);
 		}
+		lastUsedMemByte = programstart;
+
 	}
 
 	private void coreDump(String programName, int memAccess, String command) {
