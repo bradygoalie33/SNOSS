@@ -16,15 +16,23 @@ public class Shell {
 	private Scanner scanLee = new Scanner(System.in);
 	private String filePath = new String("./Storage/");
 	boolean execI = false;
+	Assembler assembler;
 	CPU cpu;
 	public Shell(CPU cpu){
 		this.cpu = cpu;
+		assembler = new Assembler();
 	}
-	
+
 	public void start() throws IOException{
 		while (true) {
+			boolean ampersand = false;
 			String input = scanLee.nextLine();
 			String[] firstLine = input.split(" ");
+			if(firstLine.length > 2){
+				if(firstLine[2] == "&"){
+					ampersand = true;
+				}
+			}
 
 			switch (firstLine[0]) {
 
@@ -35,27 +43,59 @@ public class Shell {
 				System.out.println("0");
 				break;
 			case "exec":
-				Assembler assembler = new Assembler();
-				Path path = Paths.get(filePath + firstLine[1]);
-				try {
-					assembler.processFile(path.toFile());
-				} catch (IOException e1) {
-					e1.printStackTrace();
+				final String threadString = firstLine[1];
+				if(ampersand){
+					Thread t = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							Path path2 = Paths.get(filePath + threadString);
+							try {
+								assembler.processFile(path2.toFile());
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							cpu.loadProgramIntoMemory(threadString);
+						}
+					});
 				}
-				cpu.loadProgramIntoMemory(firstLine[1]);
+				else{
+					Path path = Paths.get(filePath + firstLine[1]);
+					try {
+						assembler.processFile(path.toFile());
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					cpu.loadProgramIntoMemory(firstLine[1]);
+				}
 				break;
 			case "exec_i":
 				execI = true;
-
-				Assembler assembler2 = new Assembler();
-				Path path2 = Paths.get(filePath + firstLine[1]);
-				try {
-					assembler2.processFile(path2.toFile());
-				} catch (IOException e) {
-					e.printStackTrace();
+				if(ampersand){
+					final String threadString2 = firstLine[1];
+					Thread t2 = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							Path path2 = Paths.get(filePath + threadString2);
+							try {
+								assembler.processFile(path2.toFile());
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							cpu.loadProgramIntoMemory(threadString2);
+							execI = false;
+						}
+					});
 				}
-				cpu.loadProgramIntoMemory(firstLine[1]);
-				execI = false;
+				else{
+					Path path2 = Paths.get(filePath + firstLine[1]);
+					try {
+						assembler.processFile(path2.toFile());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					cpu.loadProgramIntoMemory(firstLine[1]);
+					execI = false;
+				}
 				break;
 			case "kill":
 				cpu.unloadProgram(firstLine[1]);
@@ -67,7 +107,7 @@ public class Shell {
 
 		}
 	}
-	
+
 	private void filesInDirectory() {
 		File folder = new File("./Storage");
 		File[] listOfFiles = folder.listFiles();

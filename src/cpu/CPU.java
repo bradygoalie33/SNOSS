@@ -82,20 +82,18 @@ public class CPU {
 
 		int pcbStart = programPCBs.get(programName);
 		int programstart = memory.getFromMemory(pcbStart);
-
+		programPCBs.remove(programName);
 		for (int i = programstart; i < pcbStart; i++) {
-			memory.storeInMemory(i, 0);
+			memory.storeInstructionInMemory(i, (byte)0);
 		}
 
 	}
 
 	private void runProgram(String programName) {
 		instructionPointer = memory.getInstructionFromMemory(programPCBs.get(programName));
-//		System.out.println("INSTRUCTION: " + memory.getFromMemory(0));
 		while (instructionPointer < (programPCBs.get(programName))) {
+			System.out.println("WHILE: " + (instructionPointer < programPCBs.get(programName)));
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
-//			System.out.println("COMMAND: " + commandType);
-			
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
 				System.out.println(" PROCESS: " + 1);
@@ -103,7 +101,6 @@ public class CPU {
 
 			instructionPointer++;
 			grabFullCommand(commandType, programName);		
-//			grabFullCommand(programPCBs.get(programName), programName);
 		}
 
 	}
