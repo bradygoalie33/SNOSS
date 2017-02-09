@@ -1,9 +1,7 @@
 package misc;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
@@ -15,7 +13,7 @@ public class Shell {
 
 	private Scanner scanLee = new Scanner(System.in);
 	private String filePath = new String("./Storage/");
-	boolean execI = false;
+	
 	Assembler assembler;
 	CPU cpu;
 	public Shell(CPU cpu){
@@ -69,7 +67,7 @@ public class Shell {
 				}
 				break;
 			case "exec_i":
-				execI = true;
+				cpu.execI = true;
 				if(ampersand){
 					final String threadString2 = firstLine[1];
 					Thread t2 = new Thread(new Runnable() {
@@ -82,7 +80,7 @@ public class Shell {
 								e.printStackTrace();
 							}
 							cpu.loadProgramIntoMemory(threadString2);
-							execI = false;
+							cpu.execI = false;
 						}
 					});
 				}
@@ -94,7 +92,7 @@ public class Shell {
 						e.printStackTrace();
 					}
 					cpu.loadProgramIntoMemory(firstLine[1]);
-					execI = false;
+					cpu.execI = false;
 				}
 				break;
 			case "kill":
