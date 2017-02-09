@@ -13,6 +13,7 @@ import java.util.Scanner;
 import assembler.Assembler;
 import assembler.Assembly;
 import misc.FileIO;
+import misc.Shell;
 
 public class CPU {
 
@@ -46,12 +47,19 @@ public class CPU {
 		// cpu.testRAM();
 		// cpu.loadProgramIntoMemory("TEST");
 
-		cpu.runConsole();
+		//cpu.runConsole();
+		Shell shell = new Shell(cpu);
+		try {
+			shell.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 	
 
-	private void loadProgramIntoMemory(String programName) {
+	public void loadProgramIntoMemory(String programName) {
 		programName = programName.replace(".txt", "");
 		int startMem = lastUsedMemByte;
 		try {
@@ -70,7 +78,7 @@ public class CPU {
 		runProgram(programName);
 	}
 	
-	private void unloadProgram(String programName) {
+	public void unloadProgram(String programName) {
 
 		int pcbStart = programPCBs.get(programName);
 		int programstart = memory.getFromMemory(pcbStart);
@@ -294,62 +302,53 @@ public class CPU {
 
 	}
 
-	private void runConsole() {
-		while (true) {
-			String input = scanLee.nextLine();
-			String[] firstLine = input.split(" ");
+//	private void runConsole() {
+//		while (true) {
+//			String input = scanLee.nextLine();
+//			String[] firstLine = input.split(" ");
+//
+//			switch (firstLine[0]) {
+//
+//			case "ls":
+//				filesInDirectory();
+//				break;
+//			case "ps":
+//				System.out.println("0");
+//				break;
+//			case "exec":
+//				Assembler assembler = new Assembler();
+//				Path path = Paths.get(filePath + firstLine[1]);
+//				try {
+//					assembler.processFile(path.toFile());
+//				} catch (IOException e1) {
+//					e1.printStackTrace();
+//				}
+//				cpu.loadProgramIntoMemory(firstLine[1]);
+//				break;
+//			case "exec_i":
+//				execI = true;
+//
+//				Assembler assembler2 = new Assembler();
+//				Path path2 = Paths.get(filePath + firstLine[1]);
+//				try {
+//					assembler2.processFile(path2.toFile());
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//				cpu.loadProgramIntoMemory(firstLine[1]);
+//				execI = false;
+//				break;
+//			case "kill":
+//				unloadProgram(firstLine[1]);
+//				break;
+//			case "exit":
+//				System.exit(0);
+//				break;
+//			}
+//
+//		}
+//	}
 
-			switch (firstLine[0]) {
-
-			case "ls":
-				filesInDirectory();
-				break;
-			case "ps":
-				System.out.println("0");
-				break;
-			case "exec":
-				Assembler assembler = new Assembler();
-				Path path = Paths.get(filePath + firstLine[1]);
-				try {
-					assembler.processFile(path.toFile());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				cpu.loadProgramIntoMemory(firstLine[1]);
-				break;
-			case "exec_i":
-				execI = true;
-
-				Assembler assembler2 = new Assembler();
-				Path path2 = Paths.get(filePath + firstLine[1]);
-				try {
-					assembler2.processFile(path2.toFile());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				cpu.loadProgramIntoMemory(firstLine[1]);
-				execI = false;
-				break;
-			case "kill":
-				unloadProgram(firstLine[1]);
-				break;
-			case "exit":
-				System.exit(0);
-				break;
-			}
-
-		}
-	}
-
-	private void filesInDirectory() {
-		File folder = new File("./Storage");
-		File[] listOfFiles = folder.listFiles();
-
-		for (File file : listOfFiles) {
-			if (file.isFile() && file.toString().contains(".txt")) {
-				System.out.println(file.getName());
-			}
-		}
-	}
+	
 
 }
