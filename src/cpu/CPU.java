@@ -1,17 +1,11 @@
 package cpu;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-
-import assembler.Assembler;
-import assembler.Assembly;
 import misc.FileIO;
 import misc.Shell;
 
@@ -35,26 +29,13 @@ public class CPU {
 
 	public static void main(String args[]) {
 		fileIO = new FileIO();
-		// Assembler assembler = new Assembler();
-		// fileIO.loadFile(fileToLoad)
-		// assembly.translateProgram();
-		
 		cpu = new CPU();
 		cpu.initRegisters();
 		cpu.initRAM();
-
-		// cpu.initFile();
-
-		// cpu.testRegisters();
-		// cpu.testRAM();
-		// cpu.loadProgramIntoMemory("TEST");
-
-		//cpu.runConsole();
 		Shell shell = new Shell(cpu);
 		try {
 			shell.start();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -66,7 +47,6 @@ public class CPU {
 		int startMem = lastUsedMemByte;
 		try {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
-//			System.out.println("LENGTH: " + temp.length);
 			for (int i = lastUsedMemByte; i < temp.length - 4; i++) {
 				memory.storeInstructionInMemory(lastUsedMemByte, temp[i]);
 				lastUsedMemByte++;
@@ -75,8 +55,6 @@ public class CPU {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//This decrement is to fix the extra increment I have going at the end of the loop
-//		lastUsedMemByte--;
 		allocatePCB(lastUsedMemByte, programName, startMem, pId);
 		runProgram(pId);
 		pId++;
