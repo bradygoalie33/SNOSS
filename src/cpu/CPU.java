@@ -26,7 +26,7 @@ public class CPU {
 	private static FileIO fileIO;
 	private Map<Integer, Integer> programPCBs = new HashMap<Integer, Integer>();
 	private Map<Integer,String> programNames = new HashMap<Integer,String>();
-	private boolean execI = false;
+	public boolean execI = false;
 	int instructionPointer = 0;
 	private final int PCB_SIZE = 20;
 	private final int STACK_SIZE = 44;
@@ -66,8 +66,8 @@ public class CPU {
 		int startMem = lastUsedMemByte;
 		try {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
-			
-			for (int i = lastUsedMemByte; i < temp.length; i++) {
+//			System.out.println("LENGTH: " + temp.length);
+			for (int i = lastUsedMemByte; i < temp.length - 4; i++) {
 				memory.storeInstructionInMemory(lastUsedMemByte, temp[i]);
 				lastUsedMemByte++;
 			}
@@ -75,20 +75,24 @@ public class CPU {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		//This decrement is to fix the extra increment I have going at the end of the loop
+//		lastUsedMemByte--;
 		allocatePCB(lastUsedMemByte, programName, startMem, pId);
 		runProgram(pId);
 		pId++;
 	}
 
 	private void runProgram(Integer pId) {
-		instructionPointer = memory.getInstructionFromMemory(programPCBs.get(pId));
+		instructionPointer = memory.getInstructionFromMemory(programPCBs.get(pId) + 1);
 		while (instructionPointer < (programPCBs.get(pId))) {
 			System.out.println("WHILE: " + (instructionPointer < programPCBs.get(pId)));
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
 				System.out.println(" PROCESS: " + 1);
+				for(int i = 1; i < registers.size() + 1; i++) {
+					System.out.println(registers.get("R" + i).printRegister());
+				}
 			}
 
 			instructionPointer++;
@@ -268,6 +272,8 @@ public class CPU {
 		for (int i = programstart; i < pcbStart + 19; i++) {
 			memory.storeInstructionInMemory(i, (byte)0);
 		}
+		lastUsedMemByte = programstart;
+
 	}
 
 	private void coreDump(Integer pId, int memAccess, String command) {
