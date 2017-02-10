@@ -3,6 +3,7 @@ package cpu;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class CPU {
 	private static FileIO fileIO;
 	private Map<Integer, Integer> programPCBs = new HashMap<Integer, Integer>();
 	private Map<Integer,String> programNames = new HashMap<Integer,String>();
-	private Queue<Integer> processes = new LinkedList<Integer>();
+	public ArrayDeque<Integer> processes = new ArrayDeque<Integer>();
 	public Stack<Integer> execQue = new Stack<Integer>();
 	public boolean execI = false;
 	int instructionPointer = 0;
@@ -72,11 +73,18 @@ public class CPU {
 	}
 
 	public void processController(String programName){
+		try {
+			Thread.sleep(750);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		System.out.println("PROCESS CONTROLLER");
 		if(processes.size() > 0){
-			int top = processes.poll();
+			int top = processes.pollFirst();
 //			System.out.println("TOP: " + top);
 			if(programPCBs.get(top) != null) {
+				System.out.println("IN SWAPPING IF PSIZE: " + processes.size());
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
 //					System.out.println("RUN: " + top);
 					runProgram(top);
@@ -84,9 +92,10 @@ public class CPU {
 			}
 		}
 		if(execQue.size() > 0){
+			
 			int i = (int) execQue.pop();
 			if(i != 0){
-//				System.out.println("ADDING TO PROCESS");
+				System.out.println("ADDING TO PROCESS " + i);
 				loadProgramIntoMemory(programName);
 				processes.add(i);
 //				processController(programName);
@@ -102,7 +111,6 @@ public class CPU {
 	private void runProgram(Integer pId) {
 //		System.out.println("RETRIEVE: " + programPCBs.get(pId) + 6);
 		instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
-		int timeSlice = instructionPointer + 20;
 		System.out.println("INSTRUCTION: " + instructionPointer + " PID: " + pId);
 		registers.get("R1").write(memory.getFromMemory(programPCBs.get(pId) + 8));
 		registers.get("R2").write(memory.getFromMemory(programPCBs.get(pId) + 10));
@@ -110,7 +118,8 @@ public class CPU {
 		registers.get("R4").write(memory.getFromMemory(programPCBs.get(pId) + 14));
 		registers.get("R5").write(memory.getFromMemory(programPCBs.get(pId) + 16));
 		registers.get("R6").write(memory.getFromMemory(programPCBs.get(pId) + 18));
-		while (instructionPointer < timeSlice && instructionPointer < (programPCBs.get(pId) + 3)) {
+		int ii = 0;
+		while (ii < 5 && instructionPointer < (programPCBs.get(pId) + 3)) {
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
@@ -119,9 +128,9 @@ public class CPU {
 					System.out.println(registers.get("R" + i).printRegister());
 				}
 			}
-
+			ii++;
 			instructionPointer++;
-			processes.add(pId);
+			//processes.add(pId);
 			boolean returnedBool = grabFullCommand(commandType, pId);
 			if(returnedBool) {
 				break;
@@ -129,7 +138,7 @@ public class CPU {
 			
 		}
 		if(programPCBs.get(pId) != null) {
-			System.out.println("Instruction POinter AFter: " + instructionPointer + " PID: " + pId);
+//			System.out.println("Instruction POinter AFter: " + instructionPointer + " PID: " + pId);
 			memory.storeInMemory((programPCBs.get(pId) + 6), instructionPointer);
 			memory.storeInMemory(programPCBs.get(pId) + 8, registers.get("R1").read());
 			memory.storeInMemory(programPCBs.get(pId) + 10, registers.get("R2").read());
@@ -137,6 +146,7 @@ public class CPU {
 			memory.storeInMemory(programPCBs.get(pId) + 14, registers.get("R4").read());
 			memory.storeInMemory(programPCBs.get(pId) + 16, registers.get("R5").read());
 			memory.storeInMemory(programPCBs.get(pId) + 18, registers.get("R6").read());
+			processes.add(pId);
 		}
 		
 		

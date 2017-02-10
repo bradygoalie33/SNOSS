@@ -54,6 +54,7 @@ public class Shell {
 //							}
 //							cpu.loadProgramIntoMemory(threadString);
 							cpu.execQue.push(CPU.pId);
+							//cpu.processes.add(CPU.pId);
 //							CPU.pId++;
 							cpu.processController(threadString);
 						}
