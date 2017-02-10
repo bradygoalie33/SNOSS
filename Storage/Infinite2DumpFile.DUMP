@@ -1,9 +1,0 @@
-<<<<<<< HEAD
-You've broken the program at pointer:96
-You were trying to access: 204
-You were running the command: STORE
-=======
-You've broken the program at pointer:15
-You were trying to access: 828
-You were running the command: LOAD
->>>>>>> 1cd665cc16f3790e53bd1583ccce6a12324f0e16

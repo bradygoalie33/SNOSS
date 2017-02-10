@@ -69,14 +69,13 @@ public class CPU {
 		//processes.add(pId);
 //		execQue.push(pId);
 		pId++;
-		processController(programName);
+//		processController(programName);
 	}
 
 	public void processController(String programName){
 		try {
-			Thread.sleep(750);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 //		System.out.println("PROCESS CONTROLLER");
@@ -84,9 +83,9 @@ public class CPU {
 			int top = processes.pollFirst();
 //			System.out.println("TOP: " + top);
 			if(programPCBs.get(top) != null) {
-				System.out.println("IN SWAPPING IF PSIZE: " + processes.size());
+//				System.out.println("IN SWAPPING IF PSIZE: " + processes.size());
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
-					System.out.println("RUN: " + top);
+//					System.out.println("RUN: " + top);
 					runProgram(top);
 				}
 			}
@@ -95,14 +94,15 @@ public class CPU {
 			
 			int i = (int) execQue.pop();
 			if(i != 0){
-				System.out.println("ADDING TO PROCESS " + i);
+//				System.out.println("ADDING TO PROCESS " + i);
 				loadProgramIntoMemory(programName);
 				processes.add(i);
+				System.out.println("ADDED: " + processes.size());
 //				processController(programName);
 			}
 		}
 		if(processes.size() > 0) {
-			System.out.println("GREATER THAN ZERO");
+//			System.out.println("GREATER THAN ZERO");
 			processController(programName);
 		}
 
@@ -147,6 +147,7 @@ public class CPU {
 			memory.storeInMemory(programPCBs.get(pId) + 16, registers.get("R5").read());
 			memory.storeInMemory(programPCBs.get(pId) + 18, registers.get("R6").read());
 			processes.add(pId);
+			System.out.println("NUM OF PROCESSES: " + processes.size());
 		}
 		
 		
@@ -177,10 +178,10 @@ public class CPU {
 //			System.out.println("REG: " + register);
 			instructionPointer++;
 			int valueToStore = binaryToInt(registers.get("R" + register).read());
-			if ((memStart + memStoreIn) < programPCBs.get(pId)
-					|| (memStart + memStoreIn) > ((programPCBs.get(pId) + PCB_SIZE + STACK_SIZE))) {
-				coreDump(pId, (memStart + memStoreIn), "STORE");
-			}
+//			if ((memStart + memStoreIn) < programPCBs.get(pId)
+//					|| (memStart + memStoreIn) > ((programPCBs.get(pId) + PCB_SIZE + STACK_SIZE))) {
+//				coreDump(pId, (memStart + memStoreIn), "STORE");
+//			}
 			memory.storeInMemory((memStart + memStoreIn), valueToStore);
 
 			break;
