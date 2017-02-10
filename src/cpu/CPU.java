@@ -25,12 +25,12 @@ public class CPU {
 	private Map<Integer, Integer> programPCBs = new HashMap<Integer, Integer>();
 	private Map<Integer,String> programNames = new HashMap<Integer,String>();
 	private Queue<Integer> processes = new LinkedList<Integer>();
-	private Stack<Integer> execQue = new Stack<Integer>();
+	public Stack<Integer> execQue = new Stack<Integer>();
 	public boolean execI = false;
 	int instructionPointer = 0;
 	private final int PCB_SIZE = 20;
 	private final int STACK_SIZE = 44;
-	private static int pId = 1;
+	public static int pId = 1;
 	public int loggingLevel = 0;
 
 
@@ -66,19 +66,19 @@ public class CPU {
 		}
 		allocatePCB(lastUsedMemByte, programName, startMem, pId);
 		//processes.add(pId);
-		execQue.push(pId);
+//		execQue.push(pId);
 		pId++;
-		processController();
+		processController(programName);
 	}
 
-	private void processController(){
+	public void processController(String programName){
 //		System.out.println("PROCESS CONTROLLER");
 		if(processes.size() > 0){
 			int top = processes.poll();
-//			System.out.println(top);
+//			System.out.println("TOP: " + top);
 			if(programPCBs.get(top) != null) {
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
-					System.out.println("RUN: " + top);
+//					System.out.println("RUN: " + top);
 					runProgram(top);
 				}
 			}
@@ -86,14 +86,15 @@ public class CPU {
 		if(execQue.size() > 0){
 			int i = (int) execQue.pop();
 			if(i != 0){
-				System.out.println("ADDING TO PROCESS");
+//				System.out.println("ADDING TO PROCESS");
+				loadProgramIntoMemory(programName);
 				processes.add(i);
-				processController();
+//				processController(programName);
 			}
 		}
 		if(processes.size() > 0) {
 //			System.out.println("GREATER THAN ZERO");
-			processController();
+			processController(programName);
 		}
 
 	}
@@ -163,6 +164,7 @@ public class CPU {
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer += 2;
 			int register = memory.getInstructionFromMemory(instructionPointer) + 1;
+//			System.out.println("REG: " + register);
 			instructionPointer++;
 			int valueToStore = binaryToInt(registers.get("R" + register).read());
 			if ((memStart + memStoreIn) < programPCBs.get(pId)
@@ -294,7 +296,7 @@ public class CPU {
 
 	private void allocatePCB(int firstOpenByte, String programName, int startMem, int pId) {
 		lastUsedMemByte = firstOpenByte + PCB_SIZE + STACK_SIZE;
-//		System.out.println("FIRST: " + firstOpenByte + "|| PID: " + pId + "|| START: " + startMem);
+		System.out.println("FIRST: " + firstOpenByte + "|| PID: " + pId + "|| START: " + startMem);
 		programPCBs.put(pId, firstOpenByte);
 		programNames.put(pId, programName);
 		int pcbIncrementer = firstOpenByte;
