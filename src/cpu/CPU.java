@@ -61,7 +61,6 @@ public class CPU {
 				memory.storeInstructionInMemory(lastUsedMemByte, temp[i]);
 				lastUsedMemByte++;
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -103,8 +102,13 @@ public class CPU {
 //		System.out.println("RETRIEVE: " + programPCBs.get(pId) + 6);
 		instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
 		int timeSlice = instructionPointer + 20;
-//		System.out.println("INSTRUCTION: " + instructionPointer);
-		
+		System.out.println("INSTRUCTION: " + instructionPointer + " PID: " + pId);
+		registers.get("R1").write(memory.getFromMemory(programPCBs.get(pId) + 8));
+		registers.get("R2").write(memory.getFromMemory(programPCBs.get(pId) + 10));
+		registers.get("R3").write(memory.getFromMemory(programPCBs.get(pId) + 12));
+		registers.get("R4").write(memory.getFromMemory(programPCBs.get(pId) + 14));
+		registers.get("R5").write(memory.getFromMemory(programPCBs.get(pId) + 16));
+		registers.get("R6").write(memory.getFromMemory(programPCBs.get(pId) + 18));
 		while (instructionPointer < timeSlice && instructionPointer < (programPCBs.get(pId) + 3)) {
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			if (execI) {
@@ -124,8 +128,16 @@ public class CPU {
 			
 		}
 		if(programPCBs.get(pId) != null) {
+			System.out.println("Instruction POinter AFter: " + instructionPointer + " PID: " + pId);
 			memory.storeInMemory((programPCBs.get(pId) + 6), instructionPointer);
+			memory.storeInMemory(programPCBs.get(pId) + 8, registers.get("R1").read());
+			memory.storeInMemory(programPCBs.get(pId) + 10, registers.get("R2").read());
+			memory.storeInMemory(programPCBs.get(pId) + 12, registers.get("R3").read());
+			memory.storeInMemory(programPCBs.get(pId) + 14, registers.get("R4").read());
+			memory.storeInMemory(programPCBs.get(pId) + 16, registers.get("R5").read());
+			memory.storeInMemory(programPCBs.get(pId) + 18, registers.get("R6").read());
 		}
+		
 		
 //		System.out.println("ENDING INSTRUCTION: " + instructionPointer);
 //		System.out.println("MEMORY: " + memory.getFromMemory((programPCBs.get(pId) + 6)));
