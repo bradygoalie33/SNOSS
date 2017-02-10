@@ -86,7 +86,7 @@ public class CPU {
 			if(programPCBs.get(top) != null) {
 				System.out.println("IN SWAPPING IF PSIZE: " + processes.size());
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
-//					System.out.println("RUN: " + top);
+					System.out.println("RUN: " + top);
 					runProgram(top);
 				}
 			}
@@ -102,7 +102,7 @@ public class CPU {
 			}
 		}
 		if(processes.size() > 0) {
-//			System.out.println("GREATER THAN ZERO");
+			System.out.println("GREATER THAN ZERO");
 			processController(programName);
 		}
 
