@@ -24,11 +24,9 @@ public class FileIO {
 			br = new BufferedReader(new FileReader(new File(filePath + fileToLoad)));
 			int incrementer = 0;
 			while ((sCurrentLine = br.readLine()) != null) {
-					toReturn[incrementer] = sCurrentLine;
-					incrementer++;
-//					System.out.println(sCurrentLine);
-				
-				
+				toReturn[incrementer] = sCurrentLine;
+				incrementer++;
+//				System.out.println(sCurrentLine);					
 			}
 			br.close();
 		} catch (IOException e) {
@@ -60,6 +58,9 @@ public class FileIO {
 		} catch (IOException e) {
 		   // do something
 		}
+	}
+	
+	public void log(String toWrite) {
 		
 	}
 	

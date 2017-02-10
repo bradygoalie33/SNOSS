@@ -25,7 +25,7 @@ public class CPU {
 	private final int PCB_SIZE = 20;
 	private final int STACK_SIZE = 44;
 	private static int pId = 1;
-	
+	public int loggingLevel = 0;
 
 	public static void main(String args[]) {
 		fileIO = new FileIO();
@@ -84,7 +84,6 @@ public class CPU {
 				
 			}
 		}
-
 	}
 
 	
