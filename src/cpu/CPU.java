@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Scanner;
+import java.util.Stack;
+
 import misc.FileIO;
 import misc.Shell;
 
@@ -20,6 +24,8 @@ public class CPU {
 	private static FileIO fileIO;
 	private Map<Integer, Integer> programPCBs = new HashMap<Integer, Integer>();
 	private Map<Integer,String> programNames = new HashMap<Integer,String>();
+	private Queue<Integer> processes = new LinkedList<Integer>();
+	private Stack<Integer> execQue = new Stack<Integer>();
 	public boolean execI = false;
 	int instructionPointer = 0;
 	private final int PCB_SIZE = 20;
@@ -27,20 +33,21 @@ public class CPU {
 	private static int pId = 1;
 	public int loggingLevel = 0;
 
+
 	public static void main(String args[]) {
 		fileIO = new FileIO();
 		cpu = new CPU();
 		cpu.initRegisters();
 		cpu.initRAM();
+		
 		Shell shell = new Shell(cpu);
 		try {
 			shell.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
-	
+
 
 	public void loadProgramIntoMemory(String programName) {
 		programName = programName.replace(".txt", "");
@@ -58,14 +65,46 @@ public class CPU {
 			e.printStackTrace();
 		}
 		allocatePCB(lastUsedMemByte, programName, startMem, pId);
-		runProgram(pId);
+		//processes.add(pId);
+		execQue.push(pId);
 		pId++;
+		processController();
+	}
+
+	private void processController(){
+//		System.out.println("PROCESS CONTROLLER");
+		if(processes.size() > 0){
+			int top = processes.poll();
+//			System.out.println(top);
+			if(programPCBs.get(top) != null) {
+				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
+//					System.out.println("RUN");
+					runProgram(top);
+				}
+			}
+		}
+		if(execQue.size() > 0){
+			int i = (int) execQue.pop();
+			if(i != 0){
+//				System.out.println("ADDING TO PROCESS");
+				processes.add(i);
+				processController();
+			}
+		}
+		if(processes.size() > 0) {
+//			System.out.println("GREATER THAN ZERO");
+			processController();
+		}
+
 	}
 
 	private void runProgram(Integer pId) {
-		instructionPointer = memory.getInstructionFromMemory(programPCBs.get(pId) + 1);
-		while (instructionPointer < (programPCBs.get(pId))) {
-//			System.out.println("WHILE: " + (instructionPointer < programPCBs.get(pId)) + "|| INSTRUCTION: " + instructionPointer + "|| PCB: " + programPCBs.get(pId));
+//		System.out.println("RETRIEVE: " + programPCBs.get(pId) + 6);
+		instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
+		int timeSlice = instructionPointer + 20;
+//		System.out.println("INSTRUCTION: " + instructionPointer);
+		
+		while (instructionPointer < timeSlice && instructionPointer < (programPCBs.get(pId) + 3)) {
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
@@ -76,17 +115,21 @@ public class CPU {
 			}
 
 			instructionPointer++;
+			processes.add(pId);
 			boolean returnedBool = grabFullCommand(commandType, pId);
 			if(returnedBool) {
 				break;
 			}
-			else {
-				
-			}
+			
 		}
+		if(programPCBs.get(pId) != null) {
+			memory.storeInMemory((programPCBs.get(pId) + 6), instructionPointer);
+		}
+		
+//		System.out.println("ENDING INSTRUCTION: " + instructionPointer);
+//		System.out.println("MEMORY: " + memory.getFromMemory((programPCBs.get(pId) + 6)));
 	}
 
-	
 	private boolean grabFullCommand(int command, Integer pId) {
 		boolean returnBool = false;
 		int memStart = programPCBs.get(pId) + PCB_SIZE;
@@ -179,7 +222,7 @@ public class CPU {
 			break;
 		case 8: // Goto
 			memStoreIn = memory.getFromMemory(instructionPointer);
-//			System.out.println("GOTO: " + (memStart + memStoreIn) + "|| INSTRUCTION POINTER: " + instructionPointer);
+			//			System.out.println("GOTO: " + (memStart + memStoreIn) + "|| INSTRUCTION POINTER: " + instructionPointer);
 			instructionPointer = (memStoreIn);
 			break;
 		case 9: // Cprint
@@ -238,6 +281,7 @@ public class CPU {
 
 	private void allocatePCB(int firstOpenByte, String programName, int startMem, int pId) {
 		lastUsedMemByte = firstOpenByte + PCB_SIZE + STACK_SIZE;
+//		System.out.println("FIRST: " + firstOpenByte + "|| PID: " + pId + "|| START: " + startMem);
 		programPCBs.put(pId, firstOpenByte);
 		programNames.put(pId, programName);
 		int pcbIncrementer = firstOpenByte;
@@ -245,6 +289,7 @@ public class CPU {
 		memory.storeInMemory(pcbIncrementer+=1, startMem);
 		memory.storeInMemory(pcbIncrementer+=2, firstOpenByte - 1);
 		memory.storeInstructionInMemory(pcbIncrementer+=1, (byte)0);
+		memory.storeInMemory(pcbIncrementer+=2, startMem);
 		memory.storeInMemory(pcbIncrementer+=2, registers.get("R1").read());
 		memory.storeInMemory(pcbIncrementer+=2, registers.get("R2").read());
 		memory.storeInMemory(pcbIncrementer+=2, registers.get("R3").read());
@@ -252,15 +297,17 @@ public class CPU {
 		memory.storeInMemory(pcbIncrementer+=2, registers.get("R5").read());
 		memory.storeInMemory(pcbIncrementer+=2, registers.get("R6").read());		
 	}
-	
+
 	public void unloadProgram(Integer pId) {
 		int pcbStart = programPCBs.get(pId);
 		int programstart = memory.getFromMemory(pcbStart + 1);
 		programPCBs.remove(pId);
+		processes.remove(pId);
+		programNames.remove(pId);
 		for (int i = programstart; i < pcbStart + 19; i++) {
 			memory.storeInstructionInMemory(i, (byte)0);
 		}
-		System.out.println("PROGRAM START: " + programstart);
+//		System.out.println("PROGRAM START: " + programstart);
 		lastUsedMemByte = programstart;
 	}	
 
