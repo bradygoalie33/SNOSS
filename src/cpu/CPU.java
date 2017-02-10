@@ -75,10 +75,10 @@ public class CPU {
 //		System.out.println("PROCESS CONTROLLER");
 		if(processes.size() > 0){
 			int top = processes.poll();
-//			System.out.println("TOP: " + top);
+			System.out.println("TOP: " + top);
 			if(programPCBs.get(top) != null) {
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
-//					System.out.println("RUN: " + top);
+					System.out.println("RUN: " + top);
 					runProgram(top);
 				}
 			}
@@ -86,14 +86,14 @@ public class CPU {
 		if(execQue.size() > 0){
 			int i = (int) execQue.pop();
 			if(i != 0){
-//				System.out.println("ADDING TO PROCESS");
+				System.out.println("ADDING TO PROCESS");
 				loadProgramIntoMemory(programName);
 				processes.add(i);
 //				processController(programName);
 			}
 		}
 		if(processes.size() > 0) {
-//			System.out.println("GREATER THAN ZERO");
+			System.out.println("GREATER THAN ZERO");
 			processController(programName);
 		}
 
