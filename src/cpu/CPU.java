@@ -52,6 +52,7 @@ public class CPU {
 	public void loadProgramIntoMemory(String programName) {
 		programName = programName.replace(".txt", "");
 		int startMem = lastUsedMemByte;
+		System.out.println("LAST USED: " + lastUsedMemByte);
 		try {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
 
@@ -78,7 +79,7 @@ public class CPU {
 //			System.out.println(top);
 			if(programPCBs.get(top) != null) {
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
-//					System.out.println("RUN");
+					System.out.println("RUN: " + top);
 					runProgram(top);
 				}
 			}
@@ -86,7 +87,7 @@ public class CPU {
 		if(execQue.size() > 0){
 			int i = (int) execQue.pop();
 			if(i != 0){
-//				System.out.println("ADDING TO PROCESS");
+				System.out.println("ADDING TO PROCESS");
 				processes.add(i);
 				processController();
 			}
@@ -222,7 +223,7 @@ public class CPU {
 			break;
 		case 8: // Goto
 			memStoreIn = memory.getFromMemory(instructionPointer);
-			//			System.out.println("GOTO: " + (memStart + memStoreIn) + "|| INSTRUCTION POINTER: " + instructionPointer);
+			//System.out.println("GOTO: " + (memStart + memStoreIn) + "|| INSTRUCTION POINTER: " + instructionPointer);
 			instructionPointer = (memStoreIn);
 			break;
 		case 9: // Cprint
