@@ -46,13 +46,16 @@ public class Shell {
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
-							Path path2 = Paths.get(filePath + threadString);
-							try {
-								assembler.processFile(path2.toFile());
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-							cpu.loadProgramIntoMemory(threadString);
+//							Path path2 = Paths.get(filePath + threadString);
+//							try {
+//								assembler.processFile(path2.toFile());
+//							} catch (IOException e) {
+//								e.printStackTrace();
+//							}
+//							cpu.loadProgramIntoMemory(threadString);
+							cpu.execQue.push(CPU.pId);
+//							CPU.pId++;
+							cpu.processController(threadString);
 						}
 					});
 					t.start();
