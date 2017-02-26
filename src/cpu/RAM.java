@@ -1,11 +1,8 @@
 package cpu;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RAM {
 	
 	byte[] memory = new byte[10000];
-	private Map<String, MemoryBlock> memoryBlocks = new HashMap<String, MemoryBlock>();
 	final int BLOCK_SIZE = 32;
 	final int numOfBlocks = (memory.length / BLOCK_SIZE);
 	

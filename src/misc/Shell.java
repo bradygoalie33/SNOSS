@@ -38,7 +38,9 @@ public class Shell {
 				filesInDirectory();
 				break;
 			case "ps":
-				System.out.println("0");
+				String processString = firstLine[1];
+//				cpu.programPCBs.get(processString);
+				cpu.printProcessInfo(processString);
 				break;
 			case "exec":
 				final String threadString = firstLine[1];

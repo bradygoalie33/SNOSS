@@ -5,9 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -23,7 +21,7 @@ public class CPU {
 	private RAM memory;
 	private static CPU cpu;
 	private static FileIO fileIO;
-	private Map<Integer, Integer> programPCBs = new HashMap<Integer, Integer>();
+	public Map<Integer, Integer> programPCBs = new HashMap<Integer, Integer>();
 	private Map<Integer,String> programNames = new HashMap<Integer,String>();
 	public ArrayDeque<Integer> processes = new ArrayDeque<Integer>();
 	public Stack<Integer> execQue = new Stack<Integer>();
@@ -33,6 +31,9 @@ public class CPU {
 	private final int STACK_SIZE = 44;
 	public static int pId = 1;
 	public int loggingLevel = 0;
+	public int sleepTime = 1000;
+	
+	
 
 
 	public static void main(String args[]) {
@@ -74,7 +75,7 @@ public class CPU {
 
 	public void processController(String programName){
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(sleepTime);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -86,6 +87,7 @@ public class CPU {
 //				System.out.println("IN SWAPPING IF PSIZE: " + processes.size());
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
 //					System.out.println("RUN: " + top);
+					System.out.println("Time slice: " + top);
 					runProgram(top);
 				}
 			}
@@ -97,7 +99,7 @@ public class CPU {
 //				System.out.println("ADDING TO PROCESS " + i);
 				loadProgramIntoMemory(programName);
 				processes.add(i);
-				System.out.println("ADDED: " + processes.size());
+//				System.out.println("ADDED: " + processes.size());
 //				processController(programName);
 			}
 		}
@@ -111,7 +113,6 @@ public class CPU {
 	private void runProgram(Integer pId) {
 //		System.out.println("RETRIEVE: " + programPCBs.get(pId) + 6);
 		instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
-		System.out.println("INSTRUCTION: " + instructionPointer + " PID: " + pId);
 		registers.get("R1").write(memory.getFromMemory(programPCBs.get(pId) + 8));
 		registers.get("R2").write(memory.getFromMemory(programPCBs.get(pId) + 10));
 		registers.get("R3").write(memory.getFromMemory(programPCBs.get(pId) + 12));
@@ -121,6 +122,8 @@ public class CPU {
 		int ii = 0;
 		while (ii < 5 && instructionPointer < (programPCBs.get(pId) + 3)) {
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
+			System.out.println("Instruction: " + instructionPointer + " Command: " + commandType + " PID: " + pId);
+
 			if (execI) {
 				System.out.print("COMMAND TYPE: " + commandType);
 				System.out.println(" PROCESS: " + 1);
@@ -147,7 +150,7 @@ public class CPU {
 			memory.storeInMemory(programPCBs.get(pId) + 16, registers.get("R5").read());
 			memory.storeInMemory(programPCBs.get(pId) + 18, registers.get("R6").read());
 			processes.add(pId);
-			System.out.println("NUM OF PROCESSES: " + processes.size());
+//			System.out.println("NUM OF PROCESSES: " + processes.size());
 		}
 		
 		
@@ -307,7 +310,7 @@ public class CPU {
 
 	private void allocatePCB(int firstOpenByte, String programName, int startMem, int pId) {
 		lastUsedMemByte = firstOpenByte + PCB_SIZE + STACK_SIZE;
-		System.out.println("FIRST: " + firstOpenByte + "|| PID: " + pId + "|| START: " + startMem);
+//		System.out.println("FIRST: " + firstOpenByte + "|| PID: " + pId + "|| START: " + startMem);
 		programPCBs.put(pId, firstOpenByte);
 		programNames.put(pId, programName);
 		int pcbIncrementer = firstOpenByte;
@@ -324,7 +327,7 @@ public class CPU {
 		memory.storeInMemory(pcbIncrementer+=2, registers.get("R6").read());		
 	}
 
-	public void unloadProgram(Integer pId) {
+	public void unloadProgram(int pId) {
 		int pcbStart = programPCBs.get(pId);
 		int programstart = memory.getFromMemory(pcbStart + 1);
 		programPCBs.remove(pId);
@@ -336,6 +339,28 @@ public class CPU {
 //		System.out.println("PROGRAM START: " + programstart);
 		lastUsedMemByte = programstart;
 	}	
+	
+	public void printProcessInfo(String pId) {
+		int processID = Integer.valueOf(pId);
+		int memStart = programPCBs.get(processID);
+		int r1 = (memory.getFromMemory(programPCBs.get(processID) + 8));
+		int r2 = (memory.getFromMemory(programPCBs.get(processID) + 10));
+		int r3 = (memory.getFromMemory(programPCBs.get(processID) + 12));
+		int r4 = (memory.getFromMemory(programPCBs.get(processID) + 14));
+		int r5 = (memory.getFromMemory(programPCBs.get(processID) + 16));
+		int r6 = (memory.getFromMemory(programPCBs.get(processID) + 18));
+		System.out.println(memStart);
+		System.out.println(memStart + 1);
+		System.out.println(memStart + 1);
+		System.out.println(memStart + 2);
+		System.out.println(r1);
+		System.out.println(r2);
+		System.out.println(r3);
+		System.out.println(r4);
+		System.out.println(r5);
+		System.out.println(r6);
+		
+	}
 
 	private void coreDump(Integer pId, int memAccess, String command) {
 		System.err.println("You've crashed the system");
@@ -361,7 +386,7 @@ public class CPU {
 	@SuppressWarnings("unused")
 	private void testRAM() {
 	}
-
+	
 	private void initRegisters() {
 
 		registers.put("R1", new Register());
