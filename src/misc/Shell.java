@@ -39,7 +39,6 @@ public class Shell {
 				break;
 			case "ps":
 				String processString = firstLine[1];
-//				cpu.programPCBs.get(processString);
 				cpu.printProcessInfo(processString);
 				break;
 			case "exec":
@@ -48,16 +47,7 @@ public class Shell {
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
-//							Path path2 = Paths.get(filePath + threadString);
-//							try {
-//								assembler.processFile(path2.toFile());
-//							} catch (IOException e) {
-//								e.printStackTrace();
-//							}
-//							cpu.loadProgramIntoMemory(threadString);
 							cpu.execQue.push(CPU.pId);
-							//cpu.processes.add(CPU.pId);
-//							CPU.pId++;
 							cpu.processController(threadString);
 						}
 					});
