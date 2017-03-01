@@ -52,15 +52,18 @@ public class CPU {
 
 
 	public void loadProgramIntoMemory(String programName) {
+//		System.out.println("LOADING YOUR PROGRAM, SIR");
 		programName = programName.replace(".txt", "");
 		int startMem = lastUsedMemByte;
 //		System.out.println("LAST USED: " + lastUsedMemByte);
 		try {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
 
-//			System.out.println("LENGTH: " + temp.length);
-			for (int i = lastUsedMemByte; i < temp.length; i++) {
-				memory.storeInstructionInMemory(lastUsedMemByte, temp[i]);
+//			System.out.println("LENGTH: " + temp.length + "|| LAST USED: " + lastUsedMemByte);
+			int loopingMemByte = lastUsedMemByte;
+			for (int i = lastUsedMemByte; i < (temp.length + loopingMemByte); i++) {
+//				System.out.println("TEST");
+				memory.storeInstructionInMemory(lastUsedMemByte, temp[i - loopingMemByte]);
 				lastUsedMemByte++;
 			}
 		} catch (IOException e) {
@@ -111,7 +114,7 @@ public class CPU {
 	}
 
 	private void runProgram(Integer pId) {
-//		System.out.println("RETRIEVE: " + programPCBs.get(pId) + 6);
+		System.out.println("RETRIEVE: " + memory.getFromMemory(programPCBs.get(pId) + 6));
 		instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
 		registers.get("R1").write(memory.getFromMemory(programPCBs.get(pId) + 8));
 		registers.get("R2").write(memory.getFromMemory(programPCBs.get(pId) + 10));
@@ -120,8 +123,9 @@ public class CPU {
 		registers.get("R5").write(memory.getFromMemory(programPCBs.get(pId) + 16));
 		registers.get("R6").write(memory.getFromMemory(programPCBs.get(pId) + 18));
 		int counter = 0;
-		System.out.println("INNNNNNSTRUCTION: " + instructionPointer + " PCBBBBBBB: " + (programPCBs.get(pId)));
-		while (counter < 5 && instructionPointer < (memory.getInstructionFromMemory(programPCBs.get(pId)))) {
+//		System.out.println("INNNNNNSTRUCTION: " + instructionPointer + " PCBBBBBBB: " + (programPCBs.get(pId)));
+		System.out.println("ENDPROGRAM: " + programPCBs.get(pId));
+		while (counter < 5 && instructionPointer < (programPCBs.get(pId))) {
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			System.out.println("Instruction: " + instructionPointer + " Command: " + commandType + " PID: " + pId);
 
@@ -142,7 +146,7 @@ public class CPU {
 			
 		}
 		if(programPCBs.get(pId) != null) {
-//			System.out.println("Instruction POinter AFter: " + instructionPointer + " PID: " + pId);
+			System.out.println("Instruction POinter AFter: " + instructionPointer + " PID: " + pId);
 			memory.storeInMemory((programPCBs.get(pId) + 6), instructionPointer);
 			memory.storeInMemory(programPCBs.get(pId) + 8, registers.get("R1").read());
 			memory.storeInMemory(programPCBs.get(pId) + 10, registers.get("R2").read());
@@ -252,8 +256,9 @@ public class CPU {
 			break;
 		case 8: // Goto
 			memStoreIn = memory.getFromMemory(instructionPointer);
-			//System.out.println("GOTO: " + (memStart + memStoreIn) + "|| INSTRUCTION POINTER: " + instructionPointer);
-			instructionPointer = (memStoreIn);
+			int programStart = memory.getFromMemory(programPCBs.get(pId) + 1);
+//			System.out.println("GOTO: " + (programStart + memStoreIn) + "|| pStart: " + programStart);
+			instructionPointer = (programStart + memStoreIn);
 			break;
 		case 9: // Cprint
 			memStoreIn = memory.getFromMemory(instructionPointer);
@@ -311,13 +316,13 @@ public class CPU {
 
 	private void allocatePCB(int firstOpenByte, String programName, int startMem, int pId) {
 		lastUsedMemByte = firstOpenByte + PCB_SIZE + STACK_SIZE;
-//		System.out.println("FIRST: " + firstOpenByte + "|| PID: " + pId + "|| START: " + startMem);
+		System.out.println("FIRST: " + firstOpenByte + "|| PID: " + pId + "|| START: " + startMem + "|| LAST: " + lastUsedMemByte);
 		programPCBs.put(pId, firstOpenByte);
 		programNames.put(pId, programName);
 		int pcbIncrementer = firstOpenByte;
 		memory.storeInstructionInMemory(pcbIncrementer, (byte)pId);
 		memory.storeInMemory(pcbIncrementer+=1, startMem);
-		memory.storeInMemory(pcbIncrementer+=2, firstOpenByte - 1);
+		memory.storeInMemory(pcbIncrementer+=2, lastUsedMemByte - 1);
 		memory.storeInstructionInMemory(pcbIncrementer+=1, (byte)0);
 		memory.storeInMemory(pcbIncrementer+=2, startMem);
 		memory.storeInMemory(pcbIncrementer+=2, registers.get("R1").read());
