@@ -54,7 +54,7 @@ public class CPU {
 	public void loadProgramIntoMemory(String programName) {
 		programName = programName.replace(".txt", "");
 		int startMem = lastUsedMemByte;
-		System.out.println("LAST USED: " + lastUsedMemByte);
+//		System.out.println("LAST USED: " + lastUsedMemByte);
 		try {
 			byte[] temp = Files.readAllBytes(Paths.get(filePath + programName + ".sno"));
 
@@ -119,8 +119,9 @@ public class CPU {
 		registers.get("R4").write(memory.getFromMemory(programPCBs.get(pId) + 14));
 		registers.get("R5").write(memory.getFromMemory(programPCBs.get(pId) + 16));
 		registers.get("R6").write(memory.getFromMemory(programPCBs.get(pId) + 18));
-		int ii = 0;
-		while (ii < 5 && instructionPointer < (programPCBs.get(pId) + 3)) {
+		int counter = 0;
+		System.out.println("INNNNNNSTRUCTION: " + instructionPointer + " PCBBBBBBB: " + (programPCBs.get(pId)));
+		while (counter < 5 && instructionPointer < (memory.getInstructionFromMemory(programPCBs.get(pId)))) {
 			int commandType = memory.getInstructionFromMemory(instructionPointer);
 			System.out.println("Instruction: " + instructionPointer + " Command: " + commandType + " PID: " + pId);
 
@@ -131,7 +132,7 @@ public class CPU {
 					System.out.println(registers.get("R" + i).printRegister());
 				}
 			}
-			ii++;
+			counter++;
 			instructionPointer++;
 			//processes.add(pId);
 			boolean returnedBool = grabFullCommand(commandType, pId);
