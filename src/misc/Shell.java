@@ -94,13 +94,13 @@ public class Shell {
 				}
 				break;
 			case "kill":
-				cpu.unloadProgram(Integer.parseInt(firstLine[1]));
+				cpu.queueUnloadProgram(Integer.parseInt(firstLine[1]));
 				break;
 			case "exit":
 				System.exit(0);
 				break;
 			}
-
+			
 		}
 	}
 

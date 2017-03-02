@@ -21,7 +21,7 @@ public class CPU {
 	private static CPU cpu;
 	private static FileIO fileIO;
 	public Map<Integer, Integer> programPCBs = new HashMap<Integer, Integer>();
-	private Map<Integer,String> programNames = new HashMap<Integer,String>();
+	private Map<Integer, String> programNames = new HashMap<Integer, String>();
 	public ArrayDeque<Integer> processes = new ArrayDeque<Integer>();
 	public Stack<Integer> execQue = new Stack<Integer>();
 	public boolean execI = false;
@@ -29,11 +29,9 @@ public class CPU {
 	private final int PCB_SIZE = 20;
 	private final int STACK_SIZE = 44;
 	public static int pId = 1;
-	public int loggingLevel = 0;
-	public int sleepTime = 1000;
-
-
-
+	public int loggingLevel = 1;
+	public int sleepTime = 100;
+	public boolean debug = true;
 
 	public static void main(String args[]) {
 		fileIO = new FileIO();
@@ -48,7 +46,6 @@ public class CPU {
 			e.printStackTrace();
 		}
 	}
-
 
 	public void loadProgramIntoMemory(String programName) {
 		programName = programName.replace(".txt", "");
@@ -68,88 +65,107 @@ public class CPU {
 		pId++;
 	}
 
-	public void processController(String programName){
+	public void processController(String programName) {
 		try {
-			Thread.sleep(sleepTime);
+			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		if(processes.size() > 0){
+		if (processes.size() > 0) {
 			int top = processes.pollFirst();
-			if(programPCBs.get(top) != null) {
-				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
+			if (programPCBs.get(top) != null) {
+				if ((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0) {
 					swapToWaiting(top);
 					runProgram(top);
-					if(loggingLevel > 0){
+					if (loggingLevel > 0) {
 						System.out.println("Time slice: " + top);
-						printRegisters(String.valueOf(top));
+						printRegisters(top);
+					}
+				} else if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 1) {
+					swapToWaiting(top);
+					runProgram(top);
+					if (loggingLevel > 0) {
+						System.out.println("Time slice to same proccess.");
+						printRegisters(top);
 					}
 				}
 				else {
-					swapToWaiting(top);
-					runProgram(top);
+					unloadProgram(top);
 				}
 			}
 		}
-		if(execQue.size() > 0){
+		if (execQue.size() > 0) {
 
 			int i = (int) execQue.pop();
-			if(i != 0){
+			if (i != 0) {
 				loadProgramIntoMemory(programName);
 				processes.add(i);
 			}
 		}
-		if(processes.size() > 0) {
+		if (processes.size() > 0) {
 			processController(programName);
 		}
 
 	}
 
-	private void swapToWaiting(int currentProcess){
-		memory.storeInstructionInMemory(programPCBs.get(currentProcess) + 5, (byte)1);
-		for(int i : programPCBs.keySet()){
-			if(i != currentProcess){
-				memory.storeInstructionInMemory(programPCBs.get(i) + 5, (byte)0);
+	private void swapToWaiting(int currentProcess) {
+		memory.storeInstructionInMemory(programPCBs.get(currentProcess) + 5, (byte) 1);
+		for (int i : programPCBs.keySet()) {
+			if (i != currentProcess) {
+				memory.storeInstructionInMemory(programPCBs.get(i) + 5, (byte) 0);
 			}
 		}
 	}
+
 	private void runProgram(Integer pId) {
-		instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
-		registers.get("R1").write(memory.getFromMemory(programPCBs.get(pId) + 8));
-		registers.get("R2").write(memory.getFromMemory(programPCBs.get(pId) + 10));
-		registers.get("R3").write(memory.getFromMemory(programPCBs.get(pId) + 12));
-		registers.get("R4").write(memory.getFromMemory(programPCBs.get(pId) + 14));
-		registers.get("R5").write(memory.getFromMemory(programPCBs.get(pId) + 16));
-		registers.get("R6").write(memory.getFromMemory(programPCBs.get(pId) + 18));
-		int counter = 0;
-		while (counter < 5 && instructionPointer < (programPCBs.get(pId))) {
-			int commandType = memory.getInstructionFromMemory(instructionPointer);
-			if(loggingLevel > 0){
-				System.out.println("Instruction: " + instructionPointer + " Command: " + commandType + " PID: " + pId);
-			}
-			if (execI) {
-				System.out.print("COMMAND TYPE: " + commandType);
-				System.out.println(" PROCESS: " + 1);
-				for(int i = 1; i < registers.size() + 1; i++) {
-					System.out.println(registers.get("R" + i).printRegister());
-				}
-			}
-			counter++;
-			instructionPointer++;
-			boolean returnedBool = grabFullCommand(commandType, pId);
-			if(returnedBool) {
-				break;
+		if (debug) {
+			try {
+				Thread.sleep(2500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
-		if(programPCBs.get(pId) != null) {
-			memory.storeInMemory((programPCBs.get(pId) + 6), instructionPointer);
-			memory.storeInMemory(programPCBs.get(pId) + 8, registers.get("R1").read());
-			memory.storeInMemory(programPCBs.get(pId) + 10, registers.get("R2").read());
-			memory.storeInMemory(programPCBs.get(pId) + 12, registers.get("R3").read());
-			memory.storeInMemory(programPCBs.get(pId) + 14, registers.get("R4").read());
-			memory.storeInMemory(programPCBs.get(pId) + 16, registers.get("R5").read());
-			memory.storeInMemory(programPCBs.get(pId) + 18, registers.get("R6").read());
-			processes.add(pId);
+		try {
+			instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
+			registers.get("R1").write(memory.getFromMemory(programPCBs.get(pId) + 8));
+			registers.get("R2").write(memory.getFromMemory(programPCBs.get(pId) + 10));
+			registers.get("R3").write(memory.getFromMemory(programPCBs.get(pId) + 12));
+			registers.get("R4").write(memory.getFromMemory(programPCBs.get(pId) + 14));
+			registers.get("R5").write(memory.getFromMemory(programPCBs.get(pId) + 16));
+			registers.get("R6").write(memory.getFromMemory(programPCBs.get(pId) + 18));
+			int counter = 0;
+			while (counter < 5 && instructionPointer < (programPCBs.get(pId))) {
+				int commandType = memory.getInstructionFromMemory(instructionPointer);
+				if (loggingLevel > 0) {
+					System.out.println(
+							"Instruction: " + instructionPointer + " Command: " + commandType + " PID: " + pId);
+				}
+				if (execI) {
+					System.out.print("COMMAND TYPE: " + commandType);
+					System.out.println(" PROCESS: " + 1);
+					for (int i = 1; i < registers.size() + 1; i++) {
+						System.out.println(registers.get("R" + i).printRegister());
+					}
+				}
+				counter++;
+				instructionPointer++;
+				boolean returnedBool = grabFullCommand(commandType, pId);
+				if (returnedBool) {
+					break;
+				}
+			}
+			if (programPCBs.get(pId) != null) {
+				memory.storeInMemory((programPCBs.get(pId) + 6), instructionPointer);
+				memory.storeInMemory(programPCBs.get(pId) + 8, registers.get("R1").read());
+				memory.storeInMemory(programPCBs.get(pId) + 10, registers.get("R2").read());
+				memory.storeInMemory(programPCBs.get(pId) + 12, registers.get("R3").read());
+				memory.storeInMemory(programPCBs.get(pId) + 14, registers.get("R4").read());
+				memory.storeInMemory(programPCBs.get(pId) + 16, registers.get("R5").read());
+				memory.storeInMemory(programPCBs.get(pId) + 18, registers.get("R6").read());
+				processes.add(pId);
+			}
+		} catch (NullPointerException e) {
+
 		}
 	}
 
@@ -173,13 +189,14 @@ public class CPU {
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			instructionPointer += 2;
 			int register = memory.getInstructionFromMemory(instructionPointer) + 1;
-			//			System.out.println("REG: " + register);
+			// System.out.println("REG: " + register);
 			instructionPointer++;
 			int valueToStore = binaryToInt(registers.get("R" + register).read());
-			//			if ((memStart + memStoreIn) < programPCBs.get(pId)
-			//					|| (memStart + memStoreIn) > ((programPCBs.get(pId) + PCB_SIZE + STACK_SIZE))) {
-			//				coreDump(pId, (memStart + memStoreIn), "STORE");
-			//			}
+			// if ((memStart + memStoreIn) < programPCBs.get(pId)
+			// || (memStart + memStoreIn) > ((programPCBs.get(pId) + PCB_SIZE +
+			// STACK_SIZE))) {
+			// coreDump(pId, (memStart + memStoreIn), "STORE");
+			// }
 			memory.storeInMemory((memStart + memStoreIn), valueToStore);
 
 			break;
@@ -247,7 +264,8 @@ public class CPU {
 		case 8: // Goto
 			memStoreIn = memory.getFromMemory(instructionPointer);
 			int programStart = memory.getFromMemory(programPCBs.get(pId) + 1);
-			//			System.out.println("GOTO: " + (programStart + memStoreIn) + "|| pStart: " + programStart);
+			// System.out.println("GOTO: " + (programStart + memStoreIn) + "||
+			// pStart: " + programStart);
 			instructionPointer = (programStart + memStoreIn);
 			break;
 		case 9: // Cprint
@@ -296,6 +314,7 @@ public class CPU {
 			returnBool = true;
 			break;
 		}
+
 		return returnBool;
 	}
 
@@ -309,19 +328,22 @@ public class CPU {
 		programPCBs.put(pId, firstOpenByte);
 		programNames.put(pId, programName);
 		int pcbIncrementer = firstOpenByte;
-		memory.storeInstructionInMemory(pcbIncrementer, (byte)pId);
-		memory.storeInMemory(pcbIncrementer+=1, startMem);
-		memory.storeInMemory(pcbIncrementer+=2, lastUsedMemByte - 1);
-		memory.storeInstructionInMemory(pcbIncrementer+=1, (byte)0);
-		memory.storeInMemory(pcbIncrementer+=2, startMem);
-		memory.storeInMemory(pcbIncrementer+=2, registers.get("R1").read());
-		memory.storeInMemory(pcbIncrementer+=2, registers.get("R2").read());
-		memory.storeInMemory(pcbIncrementer+=2, registers.get("R3").read());
-		memory.storeInMemory(pcbIncrementer+=2, registers.get("R4").read());
-		memory.storeInMemory(pcbIncrementer+=2, registers.get("R5").read());
-		memory.storeInMemory(pcbIncrementer+=2, registers.get("R6").read());		
+		memory.storeInstructionInMemory(pcbIncrementer, (byte) pId);
+		memory.storeInMemory(pcbIncrementer += 1, startMem);
+		memory.storeInMemory(pcbIncrementer += 2, lastUsedMemByte - 1);
+		memory.storeInstructionInMemory(pcbIncrementer += 1, (byte) 0);
+		memory.storeInMemory(pcbIncrementer += 2, startMem);
+		memory.storeInMemory(pcbIncrementer += 2, registers.get("R1").read());
+		memory.storeInMemory(pcbIncrementer += 2, registers.get("R2").read());
+		memory.storeInMemory(pcbIncrementer += 2, registers.get("R3").read());
+		memory.storeInMemory(pcbIncrementer += 2, registers.get("R4").read());
+		memory.storeInMemory(pcbIncrementer += 2, registers.get("R5").read());
+		memory.storeInMemory(pcbIncrementer += 2, registers.get("R6").read());
 	}
-
+	
+	public void queueUnloadProgram(int pId) {
+		memory.storeInstructionInMemory(programPCBs.get(pId) + 5, (byte) 2);
+	}
 	public void unloadProgram(int pId) {
 		int pcbStart = programPCBs.get(pId);
 		int programstart = memory.getFromMemory(pcbStart + 1);
@@ -329,34 +351,33 @@ public class CPU {
 		processes.remove(pId);
 		programNames.remove(pId);
 		for (int i = programstart; i < pcbStart + 19; i++) {
-			memory.storeInstructionInMemory(i, (byte)0);
+			memory.storeInstructionInMemory(i, (byte) 0);
 		}
 		lastUsedMemByte = programstart;
-	}	
+	}
 
 	public void printProcessInfo() {
-//		int processID = Integer.valueOf(pId);
-//		int memStart = programPCBs.get(processID);
-		if(programPCBs.size() > 0){
-			for(int i : programPCBs.keySet()){
+		// int processID = Integer.valueOf(pId);
+		// int memStart = programPCBs.get(processID);
+		if (programPCBs.size() > 0) {
+			for (int i : programPCBs.keySet()) {
 				System.out.println("Process ID: " + i);
-				System.out.println("Process Name: "  + programNames.get(i));
+				System.out.println("Process Name: " + programNames.get(i));
 				System.out.println("Process State: " + memory.getInstructionFromMemory(programPCBs.get(i) + 5));
 			}
-		}
-		else{
+		} else {
 			System.out.println("No Processes Loaded");
 		}
 	}
 
-	private void printRegisters(String pId){
-		int processID = Integer.valueOf(pId);
+	private void printRegisters(int processID) {
 		int r1 = (memory.getFromMemory(programPCBs.get(processID) + 8));
 		int r2 = (memory.getFromMemory(programPCBs.get(processID) + 10));
 		int r3 = (memory.getFromMemory(programPCBs.get(processID) + 12));
 		int r4 = (memory.getFromMemory(programPCBs.get(processID) + 14));
 		int r5 = (memory.getFromMemory(programPCBs.get(processID) + 16));
 		int r6 = (memory.getFromMemory(programPCBs.get(processID) + 18));
+		System.out.println("Process State: " + memory.getInstructionFromMemory(programPCBs.get(processID) + 5));
 		System.out.println("Register 1: " + r1);
 		System.out.println("Register 2: " + r2);
 		System.out.println("Register 3: " + r3);
@@ -364,11 +385,13 @@ public class CPU {
 		System.out.println("Register 5: " + r5);
 		System.out.println("Register 6: " + r6);
 	}
+
 	private void coreDump(Integer pId, int memAccess, String command) {
 		System.err.println("You've crashed the system");
 
-		fileIO.appendToFile("You've broken the program at pointer:" + instructionPointer + "\nYou were trying to access: "
-				+ memAccess + "\nYou were running the command: " + command,
+		fileIO.appendToFile(
+				"You've broken the program at pointer:" + instructionPointer + "\nYou were trying to access: "
+						+ memAccess + "\nYou were running the command: " + command,
 				programNames.get(pId) + "DumpFile.DUMP");
 
 		System.exit(0);
@@ -384,7 +407,6 @@ public class CPU {
 
 		String testHex = "0x0000000f";
 	}
-
 
 	private void initRegisters() {
 
