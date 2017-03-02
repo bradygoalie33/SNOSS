@@ -30,7 +30,7 @@ public class CPU {
 	private final int PCB_SIZE = 20;
 	private final int STACK_SIZE = 44;
 	public static int pId = 1;
-	public int loggingLevel = 1;
+	public int loggingLevel = 0;
 	public int sleepTime = 1000;
 
 
@@ -326,9 +326,8 @@ public class CPU {
 		int processID = Integer.valueOf(pId);
 		int memStart = programPCBs.get(processID);
 		System.out.println("Process ID: " + processID);
-		System.out.println("Process Name: "  + programNames.get(processID));
+		System.out.println("File Name: "  + programNames.get(processID));
 		printRegisters(pId);
-
 	}
 
 	private void printRegisters(String pId){
@@ -367,9 +366,6 @@ public class CPU {
 		String testHex = "0x0000000f";
 	}
 
-	@SuppressWarnings("unused")
-	private void testRAM() {
-	}
 
 	private void initRegisters() {
 
@@ -383,7 +379,6 @@ public class CPU {
 
 	private void initRAM() {
 		memory = new RAM();
-
 	}
 
 }
