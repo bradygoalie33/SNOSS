@@ -85,6 +85,10 @@ public class CPU {
 						printRegisters(String.valueOf(top));
 					}
 				}
+				else {
+					swapToWaiting(top);
+					runProgram(top);
+				}
 			}
 		}
 		if(execQue.size() > 0){
@@ -104,7 +108,6 @@ public class CPU {
 	private void swapToWaiting(int currentProcess){
 		memory.storeInstructionInMemory(programPCBs.get(currentProcess) + 5, (byte)1);
 		for(int i : programPCBs.keySet()){
-			System.out.println(i);
 			if(i != currentProcess){
 				memory.storeInstructionInMemory(programPCBs.get(i) + 5, (byte)0);
 			}
