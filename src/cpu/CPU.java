@@ -79,6 +79,7 @@ public class CPU {
 			int top = processes.pollFirst();
 			if(programPCBs.get(top) != null) {
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
+					
 					runProgram(top);
 					if(loggingLevel > 0){
 						System.out.println("Time slice: " + top);
@@ -101,6 +102,14 @@ public class CPU {
 
 	}
 
+	private void swapToWaiting(int currentProcess){
+		memory.storeInstructionInMemory(programPCBs.get(currentProcess), (byte)1);
+		for(int i : programPCBs.keySet()){
+			if(i != currentProcess){
+				memory.storeInstructionInMemory(programPCBs.get(i), (byte)0);
+			}
+		}
+	}
 	private void runProgram(Integer pId) {
 		instructionPointer = memory.getFromMemory(programPCBs.get(pId) + 6);
 		registers.get("R1").write(memory.getFromMemory(programPCBs.get(pId) + 8));
@@ -322,12 +331,21 @@ public class CPU {
 		lastUsedMemByte = programstart;
 	}	
 
-	public void printProcessInfo(String pId) {
-		int processID = Integer.valueOf(pId);
-		int memStart = programPCBs.get(processID);
-		System.out.println("Process ID: " + processID);
-		System.out.println("Process Name: "  + programNames.get(processID));
-		printRegisters(pId);
+	public void printProcessInfo() {
+//		int processID = Integer.valueOf(pId);
+//		int memStart = programPCBs.get(processID);
+		if(programPCBs.size() > 0){
+			for(int i : programPCBs.keySet()){
+				System.out.println("Process ID: " + i);
+				System.out.println("Process Name: "  + programNames.get(i));
+			}
+		}
+		else{
+			System.out.println("No Processes Loaded");
+		}
+	
+		
+		//printRegisters(pId);
 
 	}
 
