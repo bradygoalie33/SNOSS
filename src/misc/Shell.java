@@ -38,8 +38,8 @@ public class Shell {
 				filesInDirectory();
 				break;
 			case "ps":
-				String processString = firstLine[1];
-				cpu.printProcessInfo(processString);
+//				String processString = firstLine[1];
+				cpu.printProcessInfo();
 				break;
 			case "exec":
 				final String threadString = firstLine[1];
