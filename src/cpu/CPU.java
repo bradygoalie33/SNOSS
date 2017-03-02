@@ -78,7 +78,7 @@ public class CPU {
 			int top = processes.pollFirst();
 			if(programPCBs.get(top) != null) {
 				if((memory.getInstructionFromMemory(programPCBs.get(top) + 5)) == 0){
-					
+					swapToWaiting(top);
 					runProgram(top);
 					if(loggingLevel > 0){
 						System.out.println("Time slice: " + top);
@@ -102,10 +102,11 @@ public class CPU {
 	}
 
 	private void swapToWaiting(int currentProcess){
-		memory.storeInstructionInMemory(programPCBs.get(currentProcess), (byte)1);
+		memory.storeInstructionInMemory(programPCBs.get(currentProcess) + 5, (byte)1);
 		for(int i : programPCBs.keySet()){
+			System.out.println(i);
 			if(i != currentProcess){
-				memory.storeInstructionInMemory(programPCBs.get(i), (byte)0);
+				memory.storeInstructionInMemory(programPCBs.get(i) + 5, (byte)0);
 			}
 		}
 	}
@@ -337,6 +338,7 @@ public class CPU {
 			for(int i : programPCBs.keySet()){
 				System.out.println("Process ID: " + i);
 				System.out.println("Process Name: "  + programNames.get(i));
+				System.out.println("Process State: " + memory.getInstructionFromMemory(programPCBs.get(i) + 5));
 			}
 		}
 		else{
